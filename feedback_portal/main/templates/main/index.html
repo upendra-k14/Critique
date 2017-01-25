@@ -1,0 +1,33 @@
+{% extends "main/basic.html" %}
+{% block css %}
+    {% include "main/template_css.html" %}
+{% endblock %}
+{% block content %}
+    <section class="success" id="about">
+      <br><br>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 text-center">
+                    <h2>About</h2>
+                    <hr class="star-light">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-4 col-lg-offset-2">
+                    <p>Semantic web forms is an easy and intuitive way to generate semantic web instances without having to write any code. The builder uses OWL files to read pre-existing ontologies and class definitions. </p>
+                </div>
+                <div class="col-lg-4">
+                    <p>Given a set of Ontologies, the Form builder generates a Tree wherein you can select the classes you need in your Ontology. Once selected, we will generate intuitive forms for you to create instances of these classes. Try our builder now!</p>
+                </div>
+                <div class="col-lg-8 col-lg-offset-2 text-center">
+                    <a href="/login" class="btn btn-lg btn-outline">
+                        <i class="fa fa-code"></i> Get Started
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+{% block scripts %}
+{% include "main/template_scripts.html" %}
+{% endblock %}
