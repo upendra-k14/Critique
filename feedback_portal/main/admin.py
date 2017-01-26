@@ -1,12 +1,12 @@
 from django.contrib import admin
-from main.models import ( Student, 
+from main.models import ( Student,
                           Professor,
                           Admin,
                           Course,
 			  Feedback,
 			  CourseStudent,
 			  CourseProfessor,
-			  CourseStudentProfessor )
+			  RequestFeedback)
 
 
 # Register your models here.
@@ -17,4 +17,4 @@ admin.site.register(Feedback)
 admin.site.register(Admin)
 admin.site.register(CourseStudent)
 admin.site.register(CourseProfessor)
-admin.site.register(CourseStudentProfessor)
+admin.site.register(RequestFeedback)
