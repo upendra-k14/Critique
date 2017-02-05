@@ -2,6 +2,13 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 
+from .models import FileUpload
+
+class FileForm(forms.ModelForm):
+	class Meta:
+		model = FileUpload
+		fields = [ 'CSVFile',]
+
 class UserForm(UserCreationForm):
 	email = forms.EmailField(required=True)
 	class Meta:

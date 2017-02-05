@@ -1,9 +1,13 @@
+import csv
+import tempfile
+
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.template.context_processors import csrf
+from django.contrib.auth.models import User
 
-from .forms import UserForm
-
+from .forms import UserForm,FileForm
+from .models import Student,Professor
 
 # ----------------------------------------------------------------------------------------
 # mylogin_required : It is an authentication function used to check whether a user is logged in or not
@@ -46,3 +50,26 @@ def register(request):
     token.update(csrf(request))
     token['form'] = form
     return render(request, template_name, token)
+
+def addStudents(request):
+    context = dict()
+    if request.POST:
+            if not (request.FILES):
+                return self.construct_form(request, True, False)
+            f = request.FILES['CSVFile']
+            #fname = str(f.name)
+            #temp = tempfile.NamedTemporaryFile()
+            #name = temp.name
+            #for chunk in f.chunks():
+            #    temp.write(chunk)
+            #temp.close()
+            reader = csv.reader(f.read().splitlines())
+            for row in reader:
+                print row
+                user_instance = User.objects.create(username=row[0],email=row[1])
+                Student.objects.create(user=user_instance, rollno = row[2])
+            return render(request,"main/view.html",context)
+    else:
+        form = FileForm()
+        context['form'] = form
+        return render(request,"main/upload.html",context)

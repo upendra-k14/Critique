@@ -4,6 +4,9 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField
 
+class FileUpload(models.Model):
+    CSVFile = models.FileField()
+
 # Create your models here.
 class Student(models.Model):
     user = models.OneToOneField(User, primary_key=True)
@@ -60,7 +63,8 @@ class RequestFeedback(models.Model):
     request_by = models.ForeignKey(User)
 
     def __str__(self):
-        return self.fid
+        return self.course.name
+
 
 class Feedback(models.Model):
     """
