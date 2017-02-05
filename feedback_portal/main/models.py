@@ -11,8 +11,13 @@ class FileUpload(models.Model):
 class Student(models.Model):
     user = models.OneToOneField(User, primary_key=True)
     rollno = models.CharField(unique=True, max_length=11)
-    def __str__(self):
-        return self.user.username
+
+    def save(self, *args, **kwargs):
+        saved_user = User.objects.get(username = self.user.username)
+        saved_user.is_active= False
+        saved_user.save()
+        super(Student, self).save(*args, **kwargs)
+
 
 class Professor(models.Model):
     user = models.OneToOneField(User, primary_key=True)
