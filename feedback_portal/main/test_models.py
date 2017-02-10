@@ -1,63 +1,79 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
-from .models import Student, Admin, Professor
-from django.contrib.auth import authenticate, login
-from django.test import Client
+from .models import *
 
-class LoginTestCase(TestCase):
-    def setUp(self):
-        User.objects.create_user('student', 'student@gmail.com', 'student.password')
-        Student.objects.create(user= User.objects.get(username = 'student'),
-                               rollno='IS201401001')
+class StudentModelTest(TestCase):
+    """
+    Test Student model
+    """
 
-        User.objects.create_user('admin', 'admin@gmail.com', 'admin.password')
-        Admin.objects.create(user= User.objects.get(username = 'admin'))
+    def test_verbose_name_plural(self):
+        self.assertEqual(str(Student._meta.verbose_name_plural), 'Students')
+        
 
-        UserProfessor = User.objects.create_user('professor', 'professor@gmail.com', 'professor.password')
-        Professor.objects.create(user= User.objects.get(username = 'professor'))
+class ProfessorModelTest(TestCase):
+    """
+    Test Student model
+    """    
 
-        self.client = Client()
-
-    def test_invalid_username(self):
-        user = authenticate(username = 'Invalidname', password = 'student.password')
-        self.assertFalse(user is not None)
-
-        user = authenticate(username = 'STUDENT', password = 'student.password')
-        self.assertFalse(user is not None)
-
-        user = authenticate(username = 'stdent', password = 'student.password')
-        self.assertFalse(user is not None)
+    def test_verbose_name_plural(self):
+        self.assertEqual(str(Professor._meta.verbose_name_plural), 'Professors')
 
 
-    def test_invalid_password(self):
-        user = authenticate(username = 'student', password = '12345678')
-        self.assertFalse(user is not None)
+class AdminModelTest(TestCase):
+    """
+    Test Student model
+    """  
 
-        user = authenticate(username = 'student', password = 'student.Password')
-        self.assertFalse(user is not None)
+    def test_verbose_name_plural(self):
+        self.assertEqual(str(Admin._meta.verbose_name_plural), 'Feedback Portal Admins')
 
-        user = authenticate(username = 'student', password = 'studentPassword')
-        self.assertFalse(user is not None)
 
-    def test_invalid_username_password(self):
-        user = authenticate(username = 'student',password = 'student.password')
-        self.assertFalse(user is not None)
+class CourseModelTest(TestCase):
+    """
+    Test Student model
+    """
 
-    def test_valid_username_password(self):
-        user = authenticate(username = 'admin',password = 'admin.password')
-        self.assertTrue(user is not None)
+    def test_string_representation(self):
+        course = Course(name="ITS")
+        self.assertEqual(str(course), course.name)
+        
 
-        user = authenticate(username = 'professor',password = 'professor.password')
-        self.assertTrue(user is not None)
+    def test_verbose_name_plural(self):
+        self.assertEqual(str(Course._meta.verbose_name_plural), 'Courses')
 
-    def test_login_reponse(self):
-        response = self.client.post('/login/',{'username': 'UserName', 'password': 'Password'})
-        self.assertEqual(response.status_code, 200)
 
-    def test_invalid_login(self):
-        self.assertFalse(self.client.login(username='student', password='student.password'))
+class CourseProfessorModelTest(TestCase):
+    """
+    Test Student model
+    """   
 
-    def test_valid_login(self):
-        self.assertTrue(self.client.login(username='admin', password='admin.password'))
+    def test_verbose_name_plural(self):
+        self.assertEqual(str(CourseProfessor._meta.verbose_name_plural), 'Course Professors')
 
-        self.assertTrue(self.client.login(username='professor', password='professor.password'))
+
+class CourseStudentModelTest(TestCase):
+    """
+    Test Student model
+    """
+
+    def test_verbose_name_plural(self):
+        self.assertEqual(str(CourseStudent._meta.verbose_name_plural), 'Course Students')
+
+
+class RequestFeedbackModelTest(TestCase):
+    """
+    Test Student model
+    """     
+
+    def test_verbose_name_plural(self):
+        self.assertEqual(str(RequestFeedback._meta.verbose_name_plural), 'Feedback Requisition Table')
+
+
+class FeedbackModelTest(TestCase):
+    """
+    Test Student model
+    """
+
+    def test_verbose_name_plural(self):
+        self.assertEqual(str(Feedback._meta.verbose_name_plural), 'Feedback Responses')

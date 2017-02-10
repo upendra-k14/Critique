@@ -19,18 +19,29 @@ class Student(models.Model):
         super(Student, self).save(*args, **kwargs)
 
     def __str__(self):
-        return self.user.username 
+        return self.user.username
+
+    class Meta:
+        verbose_name_plural = "Students"
 
 
 class Professor(models.Model):
     user = models.OneToOneField(User, primary_key=True)
+
     def __str__(self):
         return self.user.username
 
+    class Meta:
+        verbose_name_plural = "Professors"
+
 class Admin(models.Model):
     user = models.OneToOneField( User, primary_key=True)
+
     def __str__(self):
-	return self.user.username
+        return self.user.username
+
+    class Meta:
+        verbose_name_plural = "Feedback Portal Admins"
 
 class Course(models.Model):
     """
@@ -43,6 +54,9 @@ class Course(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        verbose_name_plural = "Courses"
+
 class CourseProfessor(models.Model):
     """
     Many to many relation between Course and Professor
@@ -52,6 +66,9 @@ class CourseProfessor(models.Model):
 
     def __str__(self):
         return self.professor.user.username
+
+    class Meta:
+        verbose_name_plural = "Course Professors"
 
 class CourseStudent(models.Model):
     """
@@ -66,12 +83,18 @@ class CourseStudent(models.Model):
         string+= self.student.user.username
         return string
 
+    class Meta:
+        verbose_name_plural = "Course Students"
+
 class RequestFeedback(models.Model):
     course = models.ForeignKey(Course)
     request_by = models.ForeignKey(User)
 
     def __str__(self):
         return self.course.name
+
+    class Meta:
+        verbose_name_plural = "Feedback Requisition Table"
 
 
 class Feedback(models.Model):
@@ -89,3 +112,6 @@ class Feedback(models.Model):
 
     def __str__(self):
         return self.student.user.username
+
+    class Meta:
+        verbose_name_plural = "Feedback Responses"
