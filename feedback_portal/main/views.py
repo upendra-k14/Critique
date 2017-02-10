@@ -77,6 +77,15 @@ def view_data(model_name):
     context['model_name'] = model_name
     return context
 
+def displayStu(request):
+    return render(request,'main/view.html',view_data('Student'))
+
+def displayAdm(request):
+    return render(request,'main/view.html',view_data('Admin'))
+
+def displayPro(request):
+    return render(request,'main/view.html',view_data('Professor'))
+
 @mylogin_required
 def addStudents(request):
     context = dict()

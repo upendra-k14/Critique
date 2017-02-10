@@ -24,4 +24,10 @@ urlpatterns = [
 
     url(r'^home/$', views.home, name='home'),
 
+    url(r'viewStudents/$', views.displayStu, name='home'),
+
+    url(r'^viewAdmin/$', views.displayAdm, name='home'),
+
+    url(r'^viewProf/$', views.displayPro, name='home'),
+
 ]
