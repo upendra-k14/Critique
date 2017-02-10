@@ -18,6 +18,9 @@ class Student(models.Model):
         saved_user.save()
         super(Student, self).save(*args, **kwargs)
 
+    def __str__(self):
+        return self.user.username 
+
 
 class Professor(models.Model):
     user = models.OneToOneField(User, primary_key=True)

@@ -20,25 +20,13 @@
         <br><br>
         <div class="container">
             <div class="row">
-                <div class="col-lg-4">
-                    <h3>{{model_name}}</h3>
-                    <table class="table table-hover">
-                      <thead>
-                      <tr>
-                        {% for each in fields %}
-                        <th>{{each}}</th>
-                        {% endfor%}
-                      </tr></thead>
-                      <tbody>
-                      {% for each in data %}
-                      <tr>
-                        {% for item in each %}
-                        <td>{{item}}</td>
-                        {% endfor %}
-                      </tr>
-                      {% endfor%}
-                    </tbody>
-                    </table>
+                <div class="col-lg-4 text-center">
+                  <a href='../addStudents'><strong><font size='8'>Add Students</font></strong></a>
+                  <br>
+                  <a href='../addAdmin'><strong><font size='8'>Add Admin</font></strong></a>
+                  <br>
+                  <a href='../addProfessor'><strong><font size='8'>Add Professor</font></strong></a>
+                  <br>
                 </div>
             </div>
             <div class="row">
