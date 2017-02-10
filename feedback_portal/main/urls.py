@@ -15,7 +15,13 @@ urlpatterns = [
     url(r'^passwordchange/$', views.mylogin_required(auth_views.password_change),{'template_name': 'main/pchange.html'}, name='password_change'),
     # Page to give success response of change
     url(r'^changedone/$', views.mylogin_required(auth_views.password_change_done),{'template_name': 'main/pdone.html'}, name='password_change_done'),
-    
-    url(r'^view/$', views.addStudents, name='view'),
+
+    url(r'^addStudents/$', views.addStudents, name='addStudents'),
+
+    url(r'^addAdmin/$', views.addAdmin, name='addAdmin'),
+
+    url(r'^addProfessor/$', views.addProfessor, name='addProfessor'),
+
+    url(r'^home/$', views.home, name='home'),
 
 ]

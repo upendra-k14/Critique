@@ -5,9 +5,11 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.template.context_processors import csrf
 from django.contrib.auth.models import User
+from django.db import IntegrityError
+
 
 from .forms import UserForm,FileForm
-from .models import Student,Professor
+from .models import Student, Professor, Admin
 
 # ----------------------------------------------------------------------------------------
 # mylogin_required : It is an authentication function used to check whether a user is logged in or not
@@ -51,25 +53,92 @@ def register(request):
     token['form'] = form
     return render(request, template_name, token)
 
+@mylogin_required
+def home(request):
+    return render(request, 'main/home.html', {})
+
+def view_data(model_name):
+    context = dict()
+    model = eval(model_name)
+    field_names = model._meta.get_fields()
+    required_fields = list()
+    for field in field_names:
+        if not field.auto_created:
+           required_fields.append(field.name)
+    data = model.objects.all()
+    required_data = list()
+    for each in data:
+        row_data = list()
+        for field in required_fields:
+               row_data.append(getattr(each,field))
+        required_data.append(row_data)
+    context['data'] = required_data
+    context['fields'] = required_fields
+    context['model_name'] = model_name
+    return context
+
+@mylogin_required
 def addStudents(request):
     context = dict()
     if request.POST:
             if not (request.FILES):
                 return self.construct_form(request, True, False)
             f = request.FILES['CSVFile']
-            #fname = str(f.name)
-            #temp = tempfile.NamedTemporaryFile()
-            #name = temp.name
-            #for chunk in f.chunks():
-            #    temp.write(chunk)
-            #temp.close()
             reader = csv.reader(f.read().splitlines())
             for row in reader:
-                print row
-                user_instance = User.objects.create(username=row[0],email=row[1])
-                Student.objects.create(user=user_instance, rollno = row[2])
-            return render(request,"main/view.html",context)
+                if len(row) == 3:
+                    try:
+                        user_instance = User.objects.create(username=row[0],email=row[1])
+                        Student.objects.create(user=user_instance, rollno = row[2])
+                    except IntegrityError:
+                        continue
+            return render(request,'main/view.html',view_data('Student'))
     else:
         form = FileForm()
         context['form'] = form
+        context['name'] = 'Student'
+        return render(request,"main/upload.html",context)
+
+@mylogin_required
+def addProfessor(request):
+    context = dict()
+    if request.POST:
+            if not (request.FILES):
+                return self.construct_form(request, True, False)
+            f = request.FILES['CSVFile']
+            reader = csv.reader(f.read().splitlines())
+            for row in reader:
+                if len(row) == 3:
+                    try:
+                        user_instance = User.objects.create(username=row[0],email=row[1])
+                        Professor.objects.create(user=user_instance)
+                    except IntegrityError:
+                        continue
+            return render(request,'main/view.html',view_data('Professor'))
+    else:
+        form = FileForm()
+        context['form'] = form
+        context['name'] = 'Professor'
+        return render(request,"main/upload.html",context)
+
+@mylogin_required
+def addAdmin(request):
+    context = dict()
+    if request.POST:
+            if not (request.FILES):
+                return self.construct_form(request, True, False)
+            f = request.FILES['CSVFile']
+            reader = csv.reader(f.read().splitlines())
+            for row in reader:
+                if len(row) == 3:
+                    try:
+                        user_instance = User.objects.create(username=row[0],email=row[1])
+                        Admin.objects.create(user=user_instance)
+                    except IntegrityError:
+                        continue
+            return render(request,'main/view.html',view_data('Admin'))
+    else:
+        form = FileForm()
+        context['form'] = form
+        context['name'] = 'Adminstrator'
         return render(request,"main/upload.html",context)
