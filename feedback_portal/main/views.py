@@ -1,5 +1,7 @@
 import csv
 import tempfile
+import pandas
+import re
 
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
@@ -86,20 +88,40 @@ def displayAdm(request):
 def displayPro(request):
     return render(request,'main/view.html',view_data('Professor'))
 
+def check_csv(row,field_nr):
+    row = [val.strip(' ') for val in row ]
+    context = dict()
+    if len(row) != field_nr:
+        context['err_msg'] = 'The csv file does not have required number of columns'
+    elif not all(isinstance(val, str) for val in  row):
+        context['err_msg'] = 'The csv file contains unexpected data'
+    elif any(val in (None, "", " ") for val in row):
+        context['err_msg'] = 'One of the fields seems to be empty'
+    elif any(re.search(r'[^A-Za-z0-9_@.]+', val) for val in row):
+        context['err_msg'] = 'One of the fields seems to have special characters'
+    context['err_at'] = ', '.join(row)
+    if context.has_key('err_msg'):
+        return context
+    else:
+        return False
+
 @mylogin_required
 def addStudents(request):
     context = dict()
-    if request.POST:
+    if request.method=='POST':
             if not (request.FILES):
                 return self.construct_form(request, True, False)
             f = request.FILES['CSVFile']
             reader = csv.reader(f.read().splitlines())
             for row in reader:
-                if len(row) == 3:
-                    try:
+                context = check_csv(row, 3)
+                if context!=False:
+                    return render(request,'main/error.html',context)
+
+                try:
                         user_instance = User.objects.create(username=row[0],email=row[1])
                         Student.objects.create(user=user_instance, rollno = row[2])
-                    except IntegrityError:
+                except IntegrityError:
                         continue
             return render(request,'main/view.html',view_data('Student'))
     else:
@@ -117,7 +139,10 @@ def addProfessor(request):
             f = request.FILES['CSVFile']
             reader = csv.reader(f.read().splitlines())
             for row in reader:
-                if len(row) == 3:
+                    context = check_csv(row, 2)
+                    if context!=False:
+                        return render(request,'main/error.html',context)
+
                     try:
                         user_instance = User.objects.create(username=row[0],email=row[1])
                         Professor.objects.create(user=user_instance)
@@ -139,7 +164,10 @@ def addAdmin(request):
             f = request.FILES['CSVFile']
             reader = csv.reader(f.read().splitlines())
             for row in reader:
-                if len(row) == 3:
+                    context = check_csv(row, 2)
+                    if context!=False:
+                        return render(request,'main/error.html',context)
+
                     try:
                         user_instance = User.objects.create(username=row[0],email=row[1])
                         Admin.objects.create(user=user_instance)
