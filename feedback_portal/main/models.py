@@ -1,15 +1,17 @@
 from __future__ import unicode_literals
+import datetime
 
 from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField
+from django.utils import timezone
 
 class FileUpload(models.Model):
     CSVFile = models.FileField()
 
 # Create your models here.
 class Student(models.Model):
-    user = models.OneToOneField(User, primary_key=True)
+    user = models.OneToOneField(User, primary_key=True, on_delete= models.CASCADE)
     rollno = models.CharField(unique=True, max_length=11)
 
     def save(self, *args, **kwargs):
@@ -26,7 +28,8 @@ class Student(models.Model):
 
 
 class Professor(models.Model):
-    user = models.OneToOneField(User, primary_key=True)
+    user = models.OneToOneField(User, primary_key=True, on_delete= models.CASCADE)
+    fullname = models.CharField(max_length=100, default = 'FULLNAME')
 
     def __str__(self):
         return self.user.username
@@ -35,7 +38,7 @@ class Professor(models.Model):
         verbose_name_plural = "Professors"
 
 class Admin(models.Model):
-    user = models.OneToOneField( User, primary_key=True)
+    user = models.OneToOneField( User, primary_key=True, on_delete= models.CASCADE)
 
     def __str__(self):
         return self.user.username
@@ -89,6 +92,8 @@ class CourseStudent(models.Model):
 class RequestFeedback(models.Model):
     course = models.ForeignKey(Course)
     request_by = models.ForeignKey(User)
+    start_date = models.DateField(default= datetime.date.today()  )
+    end_date = models.DateField(default= datetime.date.today() + datetime.timedelta(days=10))
 
     def __str__(self):
         return self.course.name
