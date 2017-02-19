@@ -5,8 +5,6 @@ import django.contrib.auth.views as auth_views
 urlpatterns = [
     # Basic index page for the application
     url(r'^$', views.index , name='index'),
-    #Page to register a new user
-    url(r'^register/$', views.register, name='register'),
     # Login page
     url(r'^login/$', auth_views.login,{'template_name': 'main/login.html'}, name='login'),
     # Logout URL, redirects to index
