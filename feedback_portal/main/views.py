@@ -4,13 +4,26 @@ import pandas
 import re
 
 from django.shortcuts import render
-from django.http import HttpResponseRedirect
 from django.template.context_processors import csrf
 from django.contrib.auth.models import User
 from django.db import IntegrityError
 
+from django.core.exceptions import *
+from django.views.generic.base import TemplateView
+from django.views.generic.edit import FormView
+from django.conf import settings
+from django.contrib.auth.views import logout
+from django.contrib.auth import authenticate, login, update_session_auth_hash
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
+from django.views.decorators.debug import sensitive_post_parameters
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import resolve_url,render
+from django.template.response import TemplateResponse
+from django.core.mail import send_mail
+import json
 
-from .forms import UserForm,FileForm
+
+from .forms import *
 from .models import Student, Professor, Admin
 
 # ----------------------------------------------------------------------------------------
@@ -55,7 +68,7 @@ def register(request):
     token['form'] = form
     return render(request, template_name, token)
 
-@mylogin_required
+@login_required
 def home(request):
     return render(request, 'main/home.html', {})
 
@@ -105,7 +118,7 @@ def check_csv(row,field_nr):
     else:
         return False
 
-@mylogin_required
+@login_required
 def addStudents(request):
     context = dict()
     if request.method=='POST':
@@ -130,7 +143,7 @@ def addStudents(request):
         context['name'] = 'Student'
         return render(request,"main/upload.html",context)
 
-@mylogin_required
+@login_required
 def addProfessor(request):
     context = dict()
     if request.POST:
@@ -155,7 +168,7 @@ def addProfessor(request):
         context['name'] = 'Professor'
         return render(request,"main/upload.html",context)
 
-@mylogin_required
+@login_required
 def addAdmin(request):
     context = dict()
     if request.POST:
