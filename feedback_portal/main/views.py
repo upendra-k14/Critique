@@ -132,8 +132,9 @@ def addStudents(request):
                     return render(request,'main/error.html',context)
 
                 try:
-                        user_instance = User.objects.create(username=row[0],email=row[1])
-                        Student.objects.create(user=user_instance, rollno = row[2])
+                    user_instance = User.objects.create(username=row[0])
+                    Student.objects.create(user=user_instance, rollno = row[1])
+
                 except IntegrityError:
                         continue
             return render(request,'main/view.html',view_data('Student'))
@@ -157,8 +158,8 @@ def addProfessor(request):
                         return render(request,'main/error.html',context)
 
                     try:
-                        user_instance = User.objects.create(username=row[0],email=row[1])
-                        Professor.objects.create(user=user_instance)
+                        user_instance = User.objects.create(username=row[1])
+                        Professor.objects.create(user=user_instance, fullname = row[0])
                     except IntegrityError:
                         continue
             return render(request,'main/view.html',view_data('Professor'))
@@ -182,8 +183,8 @@ def addAdmin(request):
                         return render(request,'main/error.html',context)
 
                     try:
-                        user_instance = User.objects.create(username=row[0],email=row[1])
-                        Admin.objects.create(user=user_instance)
+                         user_instance = User.objects.create(username=row[0])
+                         Admin.objects.create(user=user_instance)
                     except IntegrityError:
                         continue
             return render(request,'main/view.html',view_data('Admin'))

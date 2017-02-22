@@ -1,12 +1,15 @@
 from django.conf.urls import url
 from . import views
 import django.contrib.auth.views as auth_views
+from django.contrib.auth.decorators import user_passes_test
+
+login_forbidden =  user_passes_test(lambda u: u.is_anonymous(), '/home/')
 
 urlpatterns = [
     # Basic index page for the application
     url(r'^$', views.index , name='index'),
     # Login page
-    url(r'^login/$', auth_views.login,{'template_name': 'main/login.html'}, name='login'),
+    url(r'^login/$', login_forbidden(auth_views.login),{'template_name': 'main/login.html'}, name='login'),
     # Logout URL, redirects to index
     url(r'^logout/$', auth_views.logout,{'template_name': 'main/index.html'}, name='logout'),
     # Page to change password
