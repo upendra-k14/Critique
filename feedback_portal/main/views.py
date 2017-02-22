@@ -7,7 +7,9 @@ from django.shortcuts import render
 from django.template.context_processors import csrf
 from django.contrib.auth.models import User
 from django.db import IntegrityError
-
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from django.contrib.auth import authenticate
 from django.core.exceptions import *
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import FormView
@@ -40,20 +42,13 @@ def mylogin_required(function):
     return wrap
 
 # ----------------------------------------------------------------------------------------
-# index : Function generates the basic index page of the application.
-# The index page displays ad introduction about the website/project
-# Users are given the option to LogIn or SignUp. The page does not perform any functions other than linking the login and registration pages
-# There is no need to be logged in to access the index page.
+# NOTE: Create a good welcome page and link it to index. Till then, function can be used to test other pages
 def index(request):
     context = dict()
-    return render(request, 'main/index.html', context)
+    return render(request, 'main/home.html', context)
 
 # ----------------------------------------------------------------------------------------
-# register: Generates the page for a new user to register.
-# Required fields for registration are: <username> <email> <password> [<confirm password>]
-# Password field has certain restrictions that are displayed on the registration page
-# If the user registration is correct it redirects the user to a confirmation page.
-# Does not log in the user after registration process is complete. User must log in after registration.
+# NOTE: No register function needed, please remove
 def register(request):
     template_name = "main/register.html"
     if request.method == 'POST':
@@ -68,7 +63,7 @@ def register(request):
     token['form'] = form
     return render(request, template_name, token)
 
-@login_required
+# @login_required
 def home(request):
     return render(request, 'main/home.html', {})
 
@@ -93,13 +88,13 @@ def view_data(model_name):
     return context
 
 def displayStu(request):
-    return render(request,'main/view.html',view_data('Student'))
+    return render(request,'main/tables.html',view_data('Student'))
 
 def displayAdm(request):
-    return render(request,'main/view.html',view_data('Admin'))
+    return render(request,'main/tables.html',view_data('Admin'))
 
 def displayPro(request):
-    return render(request,'main/view.html',view_data('Professor'))
+    return render(request,'main/tables.html',view_data('Professor'))
 
 def check_csv(row,field_nr):
     row = [val.strip(' ') for val in row ]
@@ -118,7 +113,7 @@ def check_csv(row,field_nr):
     else:
         return False
 
-@login_required
+# @login_required
 def addStudents(request):
     context = dict()
     if request.method=='POST':
@@ -144,10 +139,10 @@ def addStudents(request):
         context['name'] = 'Student'
         return render(request,"main/upload.html",context)
 
-@login_required
+# @login_required
 def addProfessor(request):
     context = dict()
-    if request.POST:
+    if request.method=='POST':
             if not (request.FILES):
                 return self.construct_form(request, True, False)
             f = request.FILES['CSVFile']
@@ -169,10 +164,10 @@ def addProfessor(request):
         context['name'] = 'Professor'
         return render(request,"main/upload.html",context)
 
-@login_required
+# @login_required
 def addAdmin(request):
     context = dict()
-    if request.POST:
+    if request.method=='POST':
             if not (request.FILES):
                 return self.construct_form(request, True, False)
             f = request.FILES['CSVFile']
@@ -193,3 +188,23 @@ def addAdmin(request):
         context['form'] = form
         context['name'] = 'Adminstrator'
         return render(request,"main/upload.html",context)
+
+
+@csrf_exempt
+def mobile_login(request):
+    """
+    Function for authentication of user from Android app
+    """
+
+    if request.method == 'POST':
+        # get username and password
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        # authenticate user
+        user = authenticate(username=username, password=password)
+        if user is not None:
+            return JsonResponse({'login_status':'success','id':user.id})
+        else:
+            return JsonResponse({'login_status':'failed'})
+    else:
+        return JsonResponse({'login_status':'wrong request'})

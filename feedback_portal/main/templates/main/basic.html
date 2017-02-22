@@ -1,17 +1,31 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-{% include "main/meta.html" %}
-{% block css %}{% endblock %}
-{% block init_scripts %}{% endblock %}
+{% block init_script %}{% endblock %}
 </head>
-<body id="page-top" class="index">
-{% include "main/navbar.html" %}
-{% block content %}{% endblock %}
-{% block scripts %}{% endblock %}
-{% block footer %}{% endblock %}
+
+<body>
+<div id="wrapper">
+
+  <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
+
+    {% block navbar %}{% endblock %}
+    {% block sidebar %}{% endblock %}
+
+  </nav>
+
+  <div id="page-wrapper">
+
+    {% block content %}{% endblock %}
+
+  </div>
+
+</div>
 </body>
+
+{% block post_script %}{% endblock %}
+
 </html>

@@ -25,10 +25,12 @@ urlpatterns = [
 
     url(r'^home/$', views.home, name='home'),
 
-    url(r'viewStudents/$', views.displayStu, name='home'),
+    url(r'viewStudents/$', views.displayStu, name='viewStudents'),
 
-    url(r'^viewAdmin/$', views.displayAdm, name='home'),
+    url(r'^viewAdmin/$', views.displayAdm, name='viewAdmin'),
 
-    url(r'^viewProf/$', views.displayPro, name='home'),
+    url(r'^viewProfessor/$', views.displayPro, name='viewProfessor'),
+
+    url(r'^api/mobile_login/$', views.mobile_login),
 
 ]
