@@ -122,7 +122,7 @@ def addStudents(request):
             f = request.FILES['CSVFile']
             reader = csv.reader(f.read().splitlines())
             for row in reader:
-                context = check_csv(row, 3)
+                context = check_csv(row, 2)
                 if context!=False:
                     return render(request,'main/error.html',context)
 
@@ -173,7 +173,7 @@ def addAdmin(request):
             f = request.FILES['CSVFile']
             reader = csv.reader(f.read().splitlines())
             for row in reader:
-                    context = check_csv(row, 2)
+                    context = check_csv(row, 1)
                     if context!=False:
                         return render(request,'main/error.html',context)
 
