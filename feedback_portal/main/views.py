@@ -63,7 +63,7 @@ def register(request):
     token['form'] = form
     return render(request, template_name, token)
 
-# @login_required
+@login_required
 def home(request):
     return render(request, 'main/home.html', {})
 
@@ -113,7 +113,7 @@ def check_csv(row,field_nr):
     else:
         return False
 
-# @login_required
+@login_required
 def addStudents(request):
     context = dict()
     if request.method=='POST':
@@ -122,7 +122,7 @@ def addStudents(request):
             f = request.FILES['CSVFile']
             reader = csv.reader(f.read().splitlines())
             for row in reader:
-                context = check_csv(row, 3)
+                context = check_csv(row, 2)
                 if context!=False:
                     return render(request,'main/error.html',context)
 
@@ -132,14 +132,14 @@ def addStudents(request):
 
                 except IntegrityError:
                         continue
-            return render(request,'main/view.html',view_data('Student'))
+            return render(request,'main/tables.html',view_data('Student'))
     else:
         form = FileForm()
         context['form'] = form
         context['name'] = 'Student'
         return render(request,"main/upload.html",context)
 
-# @login_required
+login_required
 def addProfessor(request):
     context = dict()
     if request.method=='POST':
@@ -157,14 +157,14 @@ def addProfessor(request):
                         Professor.objects.create(user=user_instance, fullname = row[0])
                     except IntegrityError:
                         continue
-            return render(request,'main/view.html',view_data('Professor'))
+            return render(request,'main/tables.html',view_data('Professor'))
     else:
         form = FileForm()
         context['form'] = form
         context['name'] = 'Professor'
         return render(request,"main/upload.html",context)
 
-# @login_required
+@login_required
 def addAdmin(request):
     context = dict()
     if request.method=='POST':
@@ -173,7 +173,7 @@ def addAdmin(request):
             f = request.FILES['CSVFile']
             reader = csv.reader(f.read().splitlines())
             for row in reader:
-                    context = check_csv(row, 2)
+                    context = check_csv(row, 1)
                     if context!=False:
                         return render(request,'main/error.html',context)
 
@@ -182,7 +182,7 @@ def addAdmin(request):
                          Admin.objects.create(user=user_instance)
                     except IntegrityError:
                         continue
-            return render(request,'main/view.html',view_data('Admin'))
+            return render(request,'main/tables.html',view_data('Admin'))
     else:
         form = FileForm()
         context['form'] = form
