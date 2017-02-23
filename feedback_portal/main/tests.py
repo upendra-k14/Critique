@@ -20,7 +20,7 @@ class ViewTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_viewPro(self):
-        response = self.client.get('/viewProf/')
+        response = self.client.get('/viewProfessor/')
         self.assertEqual(response.status_code, 200)
 
 class AddStudentsTestCase(TestCase):
@@ -59,7 +59,7 @@ class AddStudentsTestCase(TestCase):
 
     def test_addStudents_valid_example(self):
         response = self.client.post('/addStudents/',{'CSVFile':SimpleUploadedFile('test.csv', 'stu1@iiits.in,is12\nstu2@iiits.in,is22\n')})
-        template_name = 'main/view.html'
+        template_name = 'main/tables.html'
         #context = {'model_name':'Students','err_msg':'One of the fields seems to have special characters'}
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Student')
@@ -93,7 +93,7 @@ class AddAdminTestCase(TestCase):
 
     def test_addAdmin_valid_example(self):
         response = self.client.post('/addAdmin/',{'CSVFile':SimpleUploadedFile('test.csv', 'adm1@iiits.in\nadm2@iiits.in\n')})
-        template_name = 'main/view.html'
+        template_name = 'main/tables.html'
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Admin')
         ### assert other context items as well
@@ -126,7 +126,7 @@ class AddProfessorTestCase(TestCase):
 
     def test_addProfessor_valid_example(self):
         response = self.client.post('/addProfessor/',{'CSVFile':SimpleUploadedFile('test.csv', 'prof1@iiits.in,prof1\nprof2@iiits.in,prof2\n')})
-        template_name = 'main/view.html'
+        template_name = 'main/tables.html'
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Professor')
         ### assert other context items as well
