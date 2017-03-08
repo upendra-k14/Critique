@@ -15,7 +15,8 @@ class Student(models.Model):
     user = models.OneToOneField(User, primary_key=True, on_delete= models.CASCADE)
     rollno = models.CharField(unique=True, max_length=11)
     auth_token = models.CharField(default='notoken', max_length=256)
-    auth_expiry = models.DateTimeField(default=datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc))
+    auth_token_expiry = models.DateTimeField(
+        default=datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc))
 
     def save(self, *args, **kwargs):
         saved_user = User.objects.get(username = self.user.username)
@@ -53,7 +54,7 @@ class Course(models.Model):
     """
     Each course has many users and many tasks.
     """
-    name = models.CharField(max_length=128)
+    name = models.CharField(max_length=128, primary_key=True)
     student = models.ManyToManyField(Student, through='CourseStudent')
     professor = models.ManyToManyField(Professor, through='CourseProfessor')
 
@@ -113,7 +114,7 @@ class Feedback(models.Model):
     """
     student = models.ForeignKey(Student)
     course = models.ForeignKey(Course)
-    coursestudent = models.ForeignKey(CourseStudent)
+    #coursestudent = models.ForeignKey(CourseStudent)
     fid = models.ForeignKey(RequestFeedback)
     feedback = JSONField()
     created_at = models.DateTimeField( auto_now_add = True, blank = True)

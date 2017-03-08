@@ -255,7 +255,8 @@ def authenticate_from_android(username=None, password=None):
             token = hashlib.sha256(
                 ''.join(choice(ascii_uppercase) for i in range(20)))
             student.auth_token = token
-            student.auth_expiry = datetime.datetime.now() + datetime.timedelta(days=2)
+            student.auth_token_expiry = datetime.datetime.now() + datetime.timedelta(days=2)
+            student.save()
             user_object = {
                 'username' : student.user.username,
                 'rollno' : student.rollno,
@@ -269,20 +270,76 @@ def authenticate_from_android(username=None, password=None):
     except Student.DoesNotExist:
         return None, 'userdoesntexist'
 
-def authenticate_from_token(token):
+def validate_token_session(token, username):
     """
     Function for checking whether token based session is active
     """
 
     try:
-        student = Student.objects.get(auth_token=token)
+        student = Student.objects.get(auth_token=token, username=username)
         curr_time = datetime.datetime.now()
-        if curr_time < student.auth_expiry:
-            return True, 'activesession'
+        if curr_time < student.auth_token_expiry:
+            return True, 'activesession', student
         else:
-            return False, 'expiredsession'
+            return False, 'expiredsession', None
     except Student.DoesNotExist:
-        return False, 'expiredtoken'
+        return False, 'wrongtoken', None
+
+
+def invalidate_token_session(token, username):
+    """
+    Function for checking whether token based session is active
+    """
+
+    try:
+        student = Student.objects.get(auth_token=token, username=username)
+        student.auth_token_expiry = datetime.datetime(
+            1970, 1, 1, tzinfo=datetime.timezone.utc)
+        student.save()
+        return True, 'successfullogout'
+    except Student.DoesNotExist:
+        return False, 'wrongtoken'
+
+@csrf_exempt
+def requested_feedbacks(request):
+    """
+    Function to send the requested feedbacks to a student
+    """
+
+    if request.method == "POST":
+        #get username and auth token
+        username = request.POST.get('username')
+        auth_token = request.POST.get('auth_token')
+
+        #check if session is valid
+        valid, message, sobject = validate_token_session(auth_token, username)
+
+        if valid:
+            courses = sobject.course_set.all()
+            rqst_feedbacks = []
+            for crs in courses:
+                feedbacks = RequestFeedback.objects.filter(course=crs)
+                for x in feedbacks:
+                    rqst_feedbacks.append({
+                        'rqst_id' : x.id,
+                        'course_name' : crs.name,
+                        'requested_by' : x.request_by.username,
+                        'start_date' : serialize_datetime(x.start_date),
+                        'end_date' : serialize_datetime(x.end_date),
+                    })
+
+            response_object = {
+                'message' : message,
+                'requested_feedbacks' : rqst_feedbacks,
+            }
+            return JsonResponse(response_object)
+
+        else:
+            return JsonResponse({'message':message})
+
+    else:
+        return JsonResponse({'message':'wrong request'})
+
 
 @csrf_exempt
 def mobile_login(request):
@@ -304,3 +361,73 @@ def mobile_login(request):
             return JsonResponse({'login_status':message})
     else:
         return JsonResponse({'login_status':'wrong request'})
+
+@csrf_exempt
+def mobile_logout(request):
+    """
+    Function for deauthentication of user from Android app
+    """
+
+    if request.method == "POST":
+        # get username and auth token
+        username = request.POST.get('username')
+        auth_token = request.POST.get('auth_token')
+
+        # invalidate the session
+        loggedout, message = invalidate_token_session(auth_token, username)
+
+        if loggedout:
+            return JsonResponse({'message':message})
+
+        else:
+            return JsonResponse({'message':message})
+
+    else:
+        return JsonResponse({'message':'wrong request'})
+
+@csrf_exempt
+def receive_feedback(request):
+    """
+    Function for recieving feedback
+    """
+
+    if request.method == "POST":
+        # get username, coursename, requestid and jsonfeedback
+        username = request.POST.get('username')
+        coursename = request.POST.get('coursename')
+        auth_token = request.POST.get('auth_token')
+        request_id = request.POST.get('rqst_id')
+        json_feedback = request.POST.get('json_feedback')
+
+        loggedin, message, sobject = validate_token_session(auth_token, username)
+
+        if loggedin:
+            try:
+                course_object = Course.objects.get(name=coursename)
+                request_object = RequestFeedback.objects.get(
+                    id=request_id,
+                    course__name=course_object.name)
+
+                feedback_object, created = Feedback.objects.update_or_create(
+                    student = sobject,
+                    course = course_object,
+                    fid = request_object,
+                    feedback = json_feedback)
+
+                if created:
+                    return JsonResponse({'message':'submitted feedback'})
+                else:
+                    return JsonResponse(
+                        {'message':'server side error in feedback submission'})
+
+            except RequestFeedback.DoesNotExist:
+                return JsonResponse({'message':'incorrect request object'})
+
+            except Course.DoesNotExist:
+                return JsonResponse({'message':'incorrect course object'})
+
+        else:
+            return JsonResponse({'message':message})
+
+    else:
+        return JsonResponse({'message':'wrong request'})
