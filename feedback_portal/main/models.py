@@ -1,4 +1,5 @@
 from __future__ import unicode_literals
+
 import datetime
 
 from django.db import models
@@ -13,6 +14,8 @@ class FileUpload(models.Model):
 class Student(models.Model):
     user = models.OneToOneField(User, primary_key=True, on_delete= models.CASCADE)
     rollno = models.CharField(unique=True, max_length=11)
+    auth_token = models.CharField(default='notoken', max_length=256)
+    auth_expiry = models.DateTimeField(default=datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc))
 
     def save(self, *args, **kwargs):
         saved_user = User.objects.get(username = self.user.username)
@@ -92,7 +95,7 @@ class CourseStudent(models.Model):
 class RequestFeedback(models.Model):
     course = models.ForeignKey(Course)
     request_by = models.ForeignKey(User)
-    start_date = models.DateField(default= datetime.date.today()  )
+    start_date = models.DateField(default= datetime.date.today())
     end_date = models.DateField(default= datetime.date.today() + datetime.timedelta(days=10))
 
     def __str__(self):
