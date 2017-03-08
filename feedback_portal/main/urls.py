@@ -31,6 +31,10 @@ urlpatterns = [
 
     url(r'^viewProfessor/$', views.displayPro, name='viewProfessor'),
 
+    url(r'^viewRequest/$', views.displayReq, name='viewRequest'),
+
     url(r'^api/mobile_login/$', views.mobile_login),
+
+    url(r'^request/$', views.req_feed),
 
 ]

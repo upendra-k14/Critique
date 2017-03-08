@@ -9,7 +9,7 @@ from django.forms import Form
 from django.forms import PasswordInput
 from django.forms import TextInput
 
-from .models import FileUpload
+from .models import FileUpload, RequestFeedback
 
 
 class LoginForm(AuthenticationForm):
@@ -107,15 +107,17 @@ class NewPasswordForm(forms.Form):
 
 
 class FileForm(forms.ModelForm):
-
     class Meta:
         model = FileUpload
         fields = ['CSVFile', ]
 
+class FeedbackRequestForm(forms.ModelForm):
+    class Meta:
+        model = RequestFeedback
+        fields = ['course', 'request_by', 'end_date']
 
 class UserForm(UserCreationForm):
     email = forms.EmailField(required=True)
-
     class Meta:
         model = User
         fields = [

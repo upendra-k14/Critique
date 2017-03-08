@@ -1,6 +1,12 @@
 import csv
 import re
+import pdb
+import hashlib
+import datetime
+
 from io import TextIOWrapper
+from random import choice
+from string import ascii_uppercase
 
 from django.shortcuts import render
 from django.template.context_processors import csrf
@@ -27,17 +33,14 @@ from django.shortcuts import render
 from django.template.response import TemplateResponse
 from django.core.mail import send_mail
 
-
 from .forms import *
-from .models import Student, Professor, Admin
+from .models import *
 
 # ----------------------------------------------------------------------------------------
 # mylogin_required : It is an authentication function used to check whether a user is logged in or not
 # Uses the request object to check the user attribute. If the attribute is null (no user logged in) then redirects to log in page
 # Any function can be made into an authenticated function by using the
 # "@mylogin_required" override.
-
-
 def mylogin_required(function):
     def wrap(request, *args, **kwargs):
         if not request.user.id:
@@ -58,8 +61,6 @@ def index(request):
 
 # ----------------------------------------------------------------------------------------
 # NOTE: No register function needed, please remove
-
-
 def register(request):
     template_name = 'main/register.html'
     if request.method == 'POST':
@@ -74,11 +75,38 @@ def register(request):
     token['form'] = form
     return render(request, template_name, token)
 
+@mylogin_required
+def req_feed(request):
+    form = FeedbackRequestForm()
+    context = dict()
+    context['form'] = form
+    template_name = "main/request.html"
+
+    if request.method == 'POST':
+        form = RequestFeedback()
+        form.request_by = request.user
+
+        try:
+            form.course = Course.objects.filter(id = request.POST['course'])[0]
+        except ValueError:
+            context["inv_course"] = True
+            return render(request, template_name, context)
+        try:
+            form.end_date = dt.strptime(request.POST['end_date'], "%Y-%m-%d")
+        except ValueError:
+            context["inv_date"] = True
+            return render(request, template_name, context)
+        form.save()
+        return render(request, 'main/tables.html', view_data('RequestFeedback'))
+    else:
+        return render(request, template_name, context)
+
+def displayReq(request):
+    return render(request, 'main/tables.html', view_data('RequestFeedback'))
 
 @mylogin_required
 def home(request):
     return render(request, 'main/home.html', {})
-
 
 def view_data(model_name):
     context = dict()
@@ -149,7 +177,7 @@ def addStudents(request):
                     Student.objects.create(user=user_instance, rollno = row[1])
 
                 except IntegrityError:
-                        continue
+                    continue
             return render(request,'main/tables.html',view_data('Student'))
     else:
         form = FileForm()
@@ -209,6 +237,53 @@ def addAdmin(request):
         return render(request, 'main/upload.html', context)  # Ignore PEP8Bear
 
 
+def serialize_datetime(obj):
+    """JSON serializer for objects not serializable by default json code"""
+
+    if isinstance(obj, datetime):
+        serial = obj.isoformat()
+        return serial
+    raise TypeError ("Type not serializable")
+
+def authenticate_from_android(username=None, password=None):
+    """
+    Function for creating a token based auth system
+    """
+    try:
+        student = Student.objects.get(user__username=username)
+        if student.user.check_password(password):
+            token = hashlib.sha256(
+                ''.join(choice(ascii_uppercase) for i in range(20)))
+            student.auth_token = token
+            student.auth_expiry = datetime.datetime.now() + datetime.timedelta(days=2)
+            user_object = {
+                'username' : student.user.username,
+                'rollno' : student.rollno,
+                'auth_token' : student.auth_token,
+                'auth_expiry' : serialize_datetime(student.auth_expiry)
+            }
+            return user_object, 'success'
+        else:
+            return None, 'wrongpassword'
+
+    except Student.DoesNotExist:
+        return None, 'userdoesntexist'
+
+def authenticate_from_token(token):
+    """
+    Function for checking whether token based session is active
+    """
+
+    try:
+        student = Student.objects.get(auth_token=token)
+        curr_time = datetime.datetime.now()
+        if curr_time < student.auth_expiry:
+            return True, 'activesession'
+        else:
+            return False, 'expiredsession'
+    except Student.DoesNotExist:
+        return False, 'expiredtoken'
+
 @csrf_exempt
 def mobile_login(request):
     """
@@ -220,10 +295,12 @@ def mobile_login(request):
         username = request.POST.get('username')
         password = request.POST.get('password')
         # authenticate user
-        user = authenticate(username=username, password=password)
+        user, message = authenticate_from_android(
+            username=username, password=password)
         if user is not None:
-            return JsonResponse({'login_status':'success','id':user.id})
+            user['login_status'] = message
+            return JsonResponse(user)
         else:
-            return JsonResponse({'login_status':'failed'})
+            return JsonResponse({'login_status':message})
     else:
         return JsonResponse({'login_status':'wrong request'})

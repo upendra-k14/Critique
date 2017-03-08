@@ -1,0 +1,67 @@
+{% extends "main/basic.html" %}
+
+{% block init_script %}
+  {% include 'main/pre_include.html' %}
+{% endblock %}
+
+{% block navbar %}
+  {% include 'main/navbar.html' %}
+{% endblock %}
+
+{% block sidebar %}
+  {% include 'main/sidebar.html' %}
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">Request feedback for a particular course</h1>
+    </div>
+    <!-- /.col-lg-12 -->
+</div>
+<!-- /.row -->
+<div class="row">
+    <div class="col-lg-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <p>Select a course and an expiry date for the feedback request<strong></p>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-lg-6">
+                        <form name="sentMessage" id="contactForm" method="POST" action="" enctype="multipart/form-data" novalidate>{% csrf_token %}
+                            <div class="form-group">
+                                <p>Select Course: </p>
+                                    {% if inv_course %}
+                                      <span class="text-danger">Please select a valid course</span><br>
+                                    {% endif %}
+                                {{form.course}}
+                                <br><br>
+                                <p>Select Request Expiry date: </p>
+                                    {% if inv_date %}
+                                      <span class="text-danger">Please enter a valid end date</span><br>
+                                    {% endif %}
+                                {{form.end_date}}
+                            </div>
+                            <div class="form-group">
+                                    <button type="submit" value="Submit File" class="btn btn-success btn-lg">Upload</button>
+                            </div>
+                        </form>
+                    </div>
+                    <!-- /.col-lg-6 (nested) -->
+                </div>
+                <!-- /.row (nested) -->
+            </div>
+            <!-- /.panel-body -->
+        </div>
+        <!-- /.panel -->
+    </div>
+    <!-- /.col-lg-12 -->
+</div>
+
+{% endblock %}
+
+{% block post_script %}
+  {% include 'main/post_include.html' %}
+{% endblock %}
