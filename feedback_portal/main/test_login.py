@@ -1,7 +1,8 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
 from .models import Student, Admin, Professor
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate
+from django.contrib.auth import login
 from django.test import Client
 
 class LoginTestCase(TestCase):
@@ -13,7 +14,7 @@ class LoginTestCase(TestCase):
         User.objects.create_user('admin', 'admin@gmail.com', 'admin.password')
         Admin.objects.create(user= User.objects.get(username = 'admin'))
 
-        UserProfessor = User.objects.create_user('professor', 'professor@gmail.com', 'professor.password')
+        User.objects.create_user('professor', 'professor@gmail.com', 'professor.password')
         Professor.objects.create(user= User.objects.get(username = 'professor'))
 
         self.client = Client()
