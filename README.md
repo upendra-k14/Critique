@@ -12,3 +12,12 @@ Token-Based Auth Messages
   - activesession
   - expiredsession
   - userdoesntexist
+  
+Fields to be Queried
+---------------------
+
+1. login_status
+2. username
+3. rollno
+4. auth_token
+5. auth_expiry
