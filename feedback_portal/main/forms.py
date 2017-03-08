@@ -2,9 +2,15 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.forms import *
-from django.forms import Form, CharField, FileField, TextInput, PasswordInput, FileInput
+from django.forms import CharField
+from django.forms import FileField
+from django.forms import FileInput
+from django.forms import Form
+from django.forms import PasswordInput
+from django.forms import TextInput
 
 from .models import FileUpload
+
 
 class LoginForm(AuthenticationForm):
     """
@@ -14,10 +20,10 @@ class LoginForm(AuthenticationForm):
 
     username = CharField(
         widget=TextInput(
-            attrs={'class':'mdl-textfield__input', 'id':'username'}))
+            attrs={'class': 'mdl-textfield__input', 'id': 'username'}))
     password = CharField(
         widget=PasswordInput(
-            attrs={'class':'mdl-textfield__input', 'id':'password'}))
+            attrs={'class': 'mdl-textfield__input', 'id': 'password'}))
 
     def clean(self):
         username = self.cleaned_data.get('username')
@@ -25,8 +31,9 @@ class LoginForm(AuthenticationForm):
         user = authenticate(username=username, password=password)
         if not user or not user.is_active:
             raise forms.ValidationError(
-                "Sorry, username or password incorrect!")
+                'Sorry, username or password incorrect!')
         return self.cleaned_data
+
 
 class ChangePasswordForm(SetPasswordForm):
     """
@@ -35,11 +42,11 @@ class ChangePasswordForm(SetPasswordForm):
     NOT USED
     """
     error_messages = dict(SetPasswordForm.error_messages, **{
-        'password_incorrect': ("Your old password was entered incorrectly. "
-                                "Please enter it again."),
+        'password_incorrect': ('Your old password was entered incorrectly. '
+                               'Please enter it again.'),
     })
     old_password = forms.CharField(
-        label=("Old password"),
+        label=('Old password'),
         widget=forms.PasswordInput(attrs={'autofocus': ''}),
     )
 
@@ -49,13 +56,14 @@ class ChangePasswordForm(SetPasswordForm):
         """
         Validates that the old_password field is correct.
         """
-        old_password = self.cleaned_data["old_password"]
+        old_password = self.cleaned_data['old_password']
         if not self.user.check_password(old_password):
             raise forms.ValidationError(
                 self.error_messages['password_incorrect'],
                 code='password_incorrect',
             )
         return old_password
+
 
 class NewPasswordForm(forms.Form):
     """
@@ -66,12 +74,13 @@ class NewPasswordForm(forms.Form):
     error_messages = {
         'password_mismatch': ("The two password fields didn't match."),
     }
-    new_password1 = CharField(label=("New password"),
-        widget=PasswordInput(attrs={'class':'mdl-textfield__input'}),
-        help_text=password_validation.password_validators_help_text_html())
+    new_password1 = CharField(label=('New password'),
+                              widget=PasswordInput(
+                                  attrs={'class': 'mdl-textfield__input'}),
+                              help_text=password_validation.password_validators_help_text_html())
     new_password2 = CharField(
-        label=("New password confirmation"),
-        widget=PasswordInput(attrs={'class':'mdl-textfield__input'}))
+        label=('New password confirmation'),
+        widget=PasswordInput(attrs={'class': 'mdl-textfield__input'}))
 
     def __init__(self, user, *args, **kwargs):
         self.user = user
@@ -90,7 +99,7 @@ class NewPasswordForm(forms.Form):
         return password2
 
     def save(self, commit=True):
-        password = self.cleaned_data["new_password1"]
+        password = self.cleaned_data['new_password1']
         self.user.set_password(password)
         if commit:
             self.user.save()
@@ -98,17 +107,20 @@ class NewPasswordForm(forms.Form):
 
 
 class FileForm(forms.ModelForm):
+
     class Meta:
         model = FileUpload
-        fields = [ 'CSVFile',]
+        fields = ['CSVFile', ]
+
 
 class UserForm(UserCreationForm):
     email = forms.EmailField(required=True)
+
     class Meta:
-        model= User
+        model = User
         fields = [
-            "username",
-            "email",
+            'username',
+            'email',
         ]
     def save(self,commit=True):
         user = super(UserForm, self).save(commit = False)

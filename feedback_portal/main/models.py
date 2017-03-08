@@ -24,7 +24,7 @@ class Student(models.Model):
         return self.user.username
 
     class Meta:
-        verbose_name_plural = "Students"
+        verbose_name_plural = 'Students'
 
 
 class Professor(models.Model):
@@ -35,7 +35,7 @@ class Professor(models.Model):
         return self.user.username
 
     class Meta:
-        verbose_name_plural = "Professors"
+        verbose_name_plural = 'Professors'
 
 class Admin(models.Model):
     user = models.OneToOneField( User, primary_key=True, on_delete= models.CASCADE)
@@ -44,7 +44,7 @@ class Admin(models.Model):
         return self.user.username
 
     class Meta:
-        verbose_name_plural = "Feedback Portal Admins"
+        verbose_name_plural = 'Feedback Portal Admins'
 
 class Course(models.Model):
     """
@@ -58,7 +58,7 @@ class Course(models.Model):
         return self.name
 
     class Meta:
-        verbose_name_plural = "Courses"
+        verbose_name_plural = 'Courses'
 
 class CourseProfessor(models.Model):
     """
@@ -71,7 +71,7 @@ class CourseProfessor(models.Model):
         return self.professor.user.username
 
     class Meta:
-        verbose_name_plural = "Course Professors"
+        verbose_name_plural = 'Course Professors'
 
 class CourseStudent(models.Model):
     """
@@ -82,12 +82,12 @@ class CourseStudent(models.Model):
 
     def __str__(self):
         string = self.course.name
-        string+= " - "
+        string+= ' - '
         string+= self.student.user.username
         return string
 
     class Meta:
-        verbose_name_plural = "Course Students"
+        verbose_name_plural = 'Course Students'
 
 class RequestFeedback(models.Model):
     course = models.ForeignKey(Course)
@@ -99,7 +99,7 @@ class RequestFeedback(models.Model):
         return self.course.name
 
     class Meta:
-        verbose_name_plural = "Feedback Requisition Table"
+        verbose_name_plural = 'Feedback Requisition Table'
 
 
 class Feedback(models.Model):
@@ -119,4 +119,4 @@ class Feedback(models.Model):
         return self.student.user.username
 
     class Meta:
-        verbose_name_plural = "Feedback Responses"
+        verbose_name_plural = 'Feedback Responses'

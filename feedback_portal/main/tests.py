@@ -2,8 +2,11 @@ from django.test import TestCase, Client
 from django.core.files import File
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth.models import User
-from .models import Student, Admin, Professor
-from django.contrib.auth import authenticate, login
+from .models import Admin
+from .models import Professor
+from .models import Student
+from django.contrib.auth import authenticate
+from django.contrib.auth import login
 from django.shortcuts import render
 
 class ViewTestCase(TestCase):

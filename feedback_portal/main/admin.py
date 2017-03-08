@@ -3,10 +3,10 @@ from main.models import ( Student,
                           Professor,
                           Admin,
                           Course,
-			  Feedback,
-			  CourseStudent,
-			  CourseProfessor,
-			  RequestFeedback)
+              Feedback,
+              CourseStudent,
+              CourseProfessor,
+              RequestFeedback)
 
 
 # Register your models here.
