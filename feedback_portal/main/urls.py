@@ -41,6 +41,8 @@ urlpatterns = [
 
     url(r'^api/receive_feedback/$', views.receive_feedback),
 
+    url(r'^api/check_session/$', views.check_session),
+
     url(r'^request/$', views.req_feed),
 
 ]

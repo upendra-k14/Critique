@@ -32,6 +32,7 @@ from django.shortcuts import resolve_url
 from django.shortcuts import render
 from django.template.response import TemplateResponse
 from django.core.mail import send_mail
+from django.utils import timezone
 
 from .forms import *
 from .models import *
@@ -240,7 +241,7 @@ def addAdmin(request):
 def serialize_datetime(obj):
     """JSON serializer for objects not serializable by default json code"""
 
-    if isinstance(obj, datetime):
+    if isinstance(obj, datetime.datetime) or isinstance(obj, datetime.date):
         serial = obj.isoformat()
         return serial
     raise TypeError ("Type not serializable")
@@ -253,15 +254,15 @@ def authenticate_from_android(username=None, password=None):
         student = Student.objects.get(user__username=username)
         if student.user.check_password(password):
             token = hashlib.sha256(
-                ''.join(choice(ascii_uppercase) for i in range(20)))
-            student.auth_token = token
+                ''.join(choice(ascii_uppercase) for i in range(20)).encode('utf-8'))
+            student.auth_token = token.hexdigest()
             student.auth_token_expiry = datetime.datetime.now() + datetime.timedelta(days=2)
             student.save()
             user_object = {
                 'username' : student.user.username,
                 'rollno' : student.rollno,
                 'auth_token' : student.auth_token,
-                'auth_expiry' : serialize_datetime(student.auth_expiry)
+                'auth_expiry' : serialize_datetime(student.auth_token_expiry)
             }
             return user_object, 'success'
         else:
@@ -276,8 +277,8 @@ def validate_token_session(token, username):
     """
 
     try:
-        student = Student.objects.get(auth_token=token, username=username)
-        curr_time = datetime.datetime.now()
+        student = Student.objects.get(auth_token=token, user__username=username)
+        curr_time = timezone.now()
         if curr_time < student.auth_token_expiry:
             return True, 'activesession', student
         else:
@@ -292,7 +293,7 @@ def invalidate_token_session(token, username):
     """
 
     try:
-        student = Student.objects.get(auth_token=token, username=username)
+        student = Student.objects.get(auth_token=token, user__username=username)
         student.auth_token_expiry = datetime.datetime(
             1970, 1, 1, tzinfo=datetime.timezone.utc)
         student.save()
@@ -386,6 +387,29 @@ def mobile_logout(request):
         return JsonResponse({'message':'wrong request'})
 
 @csrf_exempt
+def check_session(request):
+    """
+    Function to check the validity of session
+    """
+
+    if request.method == "POST":
+        #get username and auth token
+        username = request.POST.get('username')
+        auth_token = request.POST.get('auth_token')
+
+        #check if session is valid
+        loggedin, message, sobject = validate_token_session(auth_token, username)
+
+        if loggedin:
+            return JsonResponse({'message' : message})
+        else:
+            return JsonResponse({'message' : message})
+
+    else:
+        return JsonResponse({'message':'wrong request'})
+
+
+@csrf_exempt
 def receive_feedback(request):
     """
     Function for recieving feedback
@@ -394,7 +418,7 @@ def receive_feedback(request):
     if request.method == "POST":
         # get username, coursename, requestid and jsonfeedback
         username = request.POST.get('username')
-        coursename = request.POST.get('coursename')
+        coursename = request.POST.get('course_name')
         auth_token = request.POST.get('auth_token')
         request_id = request.POST.get('rqst_id')
         json_feedback = request.POST.get('json_feedback')
