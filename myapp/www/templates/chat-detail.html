@@ -1,0 +1,90 @@
+<!--
+  This template loads for the 'tab.friend-detail' state (app.js)
+  'friend' is a $scope variable created in the FriendsCtrl controller (controllers.js)
+  The FriendsCtrl pulls data from the Friends service (service.js)
+  The Friends service returns an array of friend data
+-->
+<ion-view view-title="{{chat.name}}">
+  <ion-content class="padding">
+    <h2 class="text-center"><b>Course feedback form</b></h2>
+    <br>
+    <!--select class="form-control form-control-lg class="col-sm-12"">
+        <option selected="selected">Course</option>
+</select-->
+<!--div class="col-sm-12">
+	<div class="form-group">
+    	<input type="text" value="" placeholder="Name of the tutor" class="form-control" />
+	</div>
+</div-->
+<div class="col-sm-12">
+	<div class="form-group">
+    	<input type="text" value="" placeholder="How would you rate the course on the whole ?" class="form-control"  id = "1" />
+	</div>
+</div>
+<h3>Feedback about the Overall course :</h3>
+<div class="col-sm-12">
+	<div class="form-group">
+    	<input type="text" value="" placeholder="Level of effort you put into the course:" class="form-control" id = "2" />
+	</div>
+</div>
+<div class="col-sm-12">
+	<div class="form-group">
+    	<input type="text" value="" placeholder="You level of knowledge at the start and end of the course:" class="form-control" id ="3"/>
+	</div>
+</div>
+<br>
+<select class="form-control form-control-lg class="col-sm-12"" id = "4">
+    <option selected="selected">Would you recommend this course to your friends ?  </option>
+    <option value="yes">yes</option>
+    <option value="no">no</option>
+</select>
+<select class="form-control form-control-lg class="col-sm-12"" id = "5">
+    <option selected="selected">Were the course contents interesting and challenging ?  </option>
+    <option value="yes">yes</option>
+    <option value="no">no</option>
+</select>
+<select class="form-control form-control-lg class="col-sm-12"" id = "6">
+    <option selected="selected">Would you like to learn more about the concepts presented in the course ?
+  </option>
+  <option value="yes">yes</option>
+  <option value="no">no</option>
+</select>
+<h3>Feedback about the tutor :</h3>
+<div class="col-sm-12">
+	<div class="form-group">
+    	<input type="text" value="" placeholder="The instructor’s knowledgeability on the subject." class="form-control" id = "7" />
+	</div>
+</div>
+<div class="col-sm-12">
+	<div class="form-group">
+    	<input type="text" value="" placeholder="The instructor demonstrated enthusiasm in teaching the topics. " class="form-control"  id = "8"/>
+	</div>
+</div>
+<div class="col-sm-12">
+	<div class="form-group">
+    	<input type="text" value="" placeholder="Did the instructor respond to the questions properly ?" class="form-control" id="9" />
+	</div>
+</div>
+<h3>Feedback about the teaching assistants and the tutorials :</h3>
+<div class="col-sm-12">
+	<div class="form-group">
+    	<input type="text" value="" placeholder="The tutorial time used efficiently.  " class="form-control" id = "10" />
+	</div>
+</div>
+<div class="col-sm-12">
+	<div class="form-group">
+    	<input type="text" value="" placeholder="TA’s are effective in helping you learn." class="form-control" id = "11" />
+	</div>
+</div>
+<div class="col-sm-12">
+	<div class="form-group">
+    	<input type="text" value="" placeholder="The number of lab exercises were sufficient." class="form-control" id = "12" />
+	</div>
+</div>
+<h3>Anything else you care to share or get off your chest?</h3>
+<textarea class="form-control" placeholder="Anything else you care to share or get off your chest?" rows="5" id = "13"></textarea>
+
+<button type="button" name="button" ng-click="submit()">submit</button>
+<button type="button" name="button" ng-click="save()">save</button>
+  </ion-content>
+</ion-view>

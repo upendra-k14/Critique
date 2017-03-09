@@ -319,11 +319,13 @@ def requested_feedbacks(request):
             courses = sobject.course_set.all()
             rqst_feedbacks = []
             for crs in courses:
+                coursename = crs.name
+                print(coursename)
                 feedbacks = RequestFeedback.objects.filter(course=crs)
                 for x in feedbacks:
                     rqst_feedbacks.append({
                         'rqst_id' : x.id,
-                        'course_name' : crs.name,
+                        'course_name' : coursename,
                         'requested_by' : x.request_by.username,
                         'start_date' : serialize_datetime(x.start_date),
                         'end_date' : serialize_datetime(x.end_date),
@@ -419,18 +421,22 @@ def receive_feedback(request):
         # get username, coursename, requestid and jsonfeedback
         username = request.POST.get('username')
         coursename = request.POST.get('course_name')
+
         auth_token = request.POST.get('auth_token')
         request_id = request.POST.get('rqst_id')
         json_feedback = request.POST.get('json_feedback')
+
+        print(request_id, coursename)
 
         loggedin, message, sobject = validate_token_session(auth_token, username)
 
         if loggedin:
             try:
+                print(coursename)
                 course_object = Course.objects.get(name=coursename)
                 request_object = RequestFeedback.objects.get(
-                    id=request_id,
-                    course__name=course_object.name)
+                    id=int(request_id),
+                    course=course_object)
 
                 feedback_object, created = Feedback.objects.update_or_create(
                     student = sobject,
