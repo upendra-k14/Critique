@@ -35,6 +35,14 @@ urlpatterns = [
 
     url(r'^api/mobile_login/$', views.mobile_login),
 
+    url(r'^api/mobile_logout/$', views.mobile_logout),
+
+    url(r'^api/get_requested_feedbacks/$', views.requested_feedbacks),
+
+    url(r'^api/receive_feedback/$', views.receive_feedback),
+
+    url(r'^api/check_session/$', views.check_session),
+
     url(r'^request/$', views.req_feed),
 
 ]
