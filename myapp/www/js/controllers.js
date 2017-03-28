@@ -8,7 +8,7 @@ angular.module('starter.controllers', ['ionic-toast'])
             'username':username,
             'auth_token':token
         };
-        var url =' http://10.0.3.191:8000/api/check_session/'
+        var url =' http://10.0.3.188:8000/api/check_session/'
     	$http({
     		url:url,
     		method:'POST',
@@ -38,7 +38,7 @@ angular.module('starter.controllers', ['ionic-toast'])
 		'username' : uname,
 		'password' : pass
 	};
-    var url =' http://10.0.3.191:8000/api/mobile_login/'
+    var url =' http://10.0.3.188:8000/api/mobile_login/'
 	var status = 'failed'
 	$http({
 		url:url,
@@ -86,7 +86,7 @@ angular.module('starter.controllers', ['ionic-toast'])
       'username':username,
       'auth_token':auth_token
   };
-  var url ='http://10.0.3.191:8000/api/get_requested_feedbacks/'
+  var url ='http://10.0.3.188:8000/api/get_requested_feedbacks/'
   $http({
       url:url,
       method:'POST',
@@ -143,7 +143,7 @@ $scope.submit = function(){
  rq_item['rqst_id'] = reqid;
 
  alert(JSON.stringify(rq_item))
- var url ='http://10.0.3.191:8000/api/receive_feedback/'
+ var url ='http://10.0.3.188:8000/api/receive_feedback/'
  $http({
      url:url,
      method:'POST',
