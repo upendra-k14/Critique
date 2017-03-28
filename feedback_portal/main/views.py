@@ -88,12 +88,12 @@ def req_feed(request):
         form.request_by = request.user
 
         try:
-            form.course = Course.objects.filter(id = request.POST['course'])[0]
+            form.course = Course.objects.filter(name = request.POST['course'])[0]
         except ValueError:
             context["inv_course"] = True
             return render(request, template_name, context)
         try:
-            form.end_date = dt.strptime(request.POST['end_date'], "%Y-%m-%d")
+            form.end_date = datetime.datetime.strptime(request.POST['end_date'], "%Y-%m-%d")
         except ValueError:
             context["inv_date"] = True
             return render(request, template_name, context)
