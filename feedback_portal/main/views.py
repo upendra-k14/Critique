@@ -33,6 +33,7 @@ from django.shortcuts import render
 from django.template.response import TemplateResponse
 from django.core.mail import send_mail
 from django.utils import timezone
+from django.http import Http404
 
 from .forms import *
 from .models import *
@@ -236,6 +237,18 @@ def addAdmin(request):
         context['form'] = form
         context['name'] = 'Adminstrator'
         return render(request, 'main/upload.html', context)  # Ignore PEP8Bear
+
+@mylogin_required
+def viewFeedback(request, course_id):
+    if request.method == 'GET':
+        # pdb.set_trace()
+        course = Course.objects.filter(pk=course_id)
+        if len(course) == 0:
+            print("not found")
+            raise Http404
+        else:
+            course = course[0]
+            return HttpResponse("<h2>"+str(course.name)+"</h2>")
 
 
 def serialize_datetime(obj):

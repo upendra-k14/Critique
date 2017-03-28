@@ -54,7 +54,7 @@ class Course(models.Model):
     """
     Each course has many users and many tasks.
     """
-    name = models.CharField(max_length=128, primary_key=True)
+    name = models.CharField(max_length=128, unique=True)
     student = models.ManyToManyField(Student, through='CourseStudent')
     professor = models.ManyToManyField(Professor, through='CourseProfessor')
 
