@@ -167,11 +167,34 @@ $scope.submit = function(){
  }
 })
 
-.controller('AccountCtrl', function($scope,$location) {
+.controller('AccountCtrl', function($scope,$location,$ionicPopup) {
   $scope.logout = function(){
       localStorage.setItem("auth_token","");
       localStorage.setItem("username","");
       localStorage.setItem("rollno","");
        $location.path("/home");
   }
-});
+  $scope.data = {};
+  $scope.showPopup = function(){
+  var myPopup = $ionicPopup.show({
+     template: '<lable>Old Password</lable><input type="password" ng-model="data.oldpass"><lable>New Password</lable><input type="password" ng-model="data.newpass"><lable>Conform Password</lable><input type="password" ng-model="data.newpasscnf">',
+     title: 'Change Password',
+     scope: $scope,
+     buttons: [
+       { text: 'Cancel' },
+       {
+         text: '<b>Change</b>',
+         type: 'button-positive',
+         onTap: function(e) {
+           if ($scope.data.newpass === $scope.data.newpasscnf ) {
+             alert("nice")
+           } else {
+             alert("not nice")
+          }
+         }
+       }
+     ]
+   });
+ }
+
+})
