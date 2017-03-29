@@ -30,7 +30,7 @@ urlpatterns = [
     url(r'^addCourseStudent/$', views.addCourseStudent, name='addCourseStudent'),
 
     url(r'^home/$', views.home, name='home'),
-    
+
     url(r'^radar/$', views.radar, name='radar'),
 
     url(r'viewStudents/$', views.displayStu, name='viewStudents'),
@@ -53,7 +53,7 @@ urlpatterns = [
 
     url(r'^feedback/(?P<f_id>[0-9]+)$', views.showFeedback, name='showFeedback'),
 
-    url(r'^visualise/(?P<course_id>[0-9]+)$', views.visualiseFeedback, name='visualiseFeedback'),
+    url(r'^visualise/(?P<f_id>[0-9]+)$', views.visualiseFeedback, name='visualiseFeedback'),
 
     url(r'^api/mobile_login/$', views.mobile_login),
 

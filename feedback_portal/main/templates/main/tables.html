@@ -44,7 +44,7 @@
                         {% for each in data %}
                         <tr>
                             {% for item in each %}
-                            <td>{{item}}</td>
+                            <td>{{item|safe}}</td>
                             {% endfor %}
                         </tr>
                         {% endfor%}
