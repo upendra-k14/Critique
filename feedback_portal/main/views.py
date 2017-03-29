@@ -650,6 +650,7 @@ def extract_lang_properties(data):
     alchemy_language = watson_developer_cloud.AlchemyLanguageV1(api_key='ddc135d16a20f8e4a6b04bba9e60e8fde322d49f')
     return alchemy_language.combined(text=data, extract=combined_operations)
 
+@csrf_exempt
 def mobile_changee_password(request):
     if request.method == 'POST':
         # get username and password
@@ -661,6 +662,7 @@ def mobile_changee_password(request):
             student = Student.objects.get(user__username=username)
             if student.user.check_password(password):
                 student.user.set_password(newpassword)
+                student.user.save()
                 return JsonResponse({'message':'success'})
             else:
                 return JsonResponse({'message':'Incorrect'})
