@@ -167,17 +167,20 @@ $scope.submit = function(){
  }
 })
 
-.controller('AccountCtrl', function($scope,$location,$ionicPopup) {
+.controller('AccountCtrl', function($scope,$location,$ionicPopup,$http,$httpParamSerializerJQLike) {
   $scope.logout = function(){
       localStorage.setItem("auth_token","");
       localStorage.setItem("username","");
       localStorage.setItem("rollno","");
        $location.path("/home");
   }
-  $scope.data = {};
+  var username = localStorage.getItem("username");
+  $scope.data = {
+    'username':username
+  };
   $scope.showPopup = function(){
   var myPopup = $ionicPopup.show({
-     template: '<lable>Old Password</lable><input type="password" ng-model="data.oldpass"><lable>New Password</lable><input type="password" ng-model="data.newpass"><lable>Conform Password</lable><input type="password" ng-model="data.newpasscnf">',
+     template: '<lable>Old Password</lable><input type="password" ng-model="data.oldpass"><lable>New Password</lable><input type="password" ng-model="data.newpass"><lable>Confirm Password</lable><input type="password" ng-model="data.newpasscnf">',
      title: 'Change Password',
      scope: $scope,
      buttons: [
@@ -187,9 +190,30 @@ $scope.submit = function(){
          type: 'button-positive',
          onTap: function(e) {
            if ($scope.data.newpass === $scope.data.newpasscnf ) {
-             alert("nice")
+             var url ='http://10.0.3.188:8000/api/mobileChangePassword/'
+             $http({
+                 url:url,
+                 method:'POST',
+                 data:$httpParamSerializerJQLike($scope.data),
+                 headers : {"Content-Type" : "application/x-www-form-urlencoded"}})
+                 .then(function(response){
+                     status = response.data.message;
+                     if (status === 'Incorrect'){
+                          alert("Incorrect Password")
+                     }
+                     else {
+                         alert("status");
+                         localStorage.setItem("auth_token","");
+                         localStorage.setItem("username","");
+                         localStorage.setItem("rollno","");
+                        $location.path("/home");
+                     }
+                 },
+                 function(response){
+                     alert("error")
+                 });
            } else {
-             alert("not nice")
+             alert("Password not match")
           }
          }
        }
