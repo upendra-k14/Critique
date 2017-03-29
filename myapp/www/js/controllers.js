@@ -80,6 +80,7 @@ angular.module('starter.controllers', ['ionic-toast'])
   //
   //$scope.$on('$ionicView.enter', function(e) {
   //});
+  
   var username = localStorage.getItem("username");
   var auth_token = localStorage.getItem("auth_token");
   var send = {
