@@ -69,8 +69,9 @@ def permission_required(function):
 
 
 def index(request):
-    context = dict()
-    return render(request, 'main/index.html', context)
+    if request.user.id:
+         return HttpResponseRedirect('/home')
+    return render(request, 'main/index.html', {})
 
 # ----------------------------------------------------------------------------------------
 # NOTE: No register function needed, please remove
@@ -119,16 +120,47 @@ def displayReq(request):
 
 @mylogin_required
 def home(request):
-    result = RequestFeedback.objects.all()
-    data = []
+    context = dict()
+    result = RequestFeedback.objects.filter(end_date__gte=datetime.datetime.today().date())
+    context["students"] = len(Student.objects.all())
+    context["courses"] = len(Course.objects.all())
+    req_data = []
+    submission_data = []
+    submission_table = []
+    total_pending = 0
+    total_submitted = 0
     for obj in result:
-        course_data = []
-        course_data.append(obj.course.name)
-        course_data.append(obj.request_by.username)
-        course_data.append(obj.start_date)
-        course_data.append(obj.end_date)
-        data.append(course_data)
-    return render(request, 'main/home.html', {"data": data})
+        submitted = len(Feedback.objects.filter(fid=obj))
+        pending = len(CourseStudent.objects.filter(course=obj.course)) - submitted
+        total_submitted += submitted
+        total_pending += pending
+        name = obj.course.name
+        fid = obj.id
+        submission_data.append({
+            "course": name,
+            "submitted": submitted,
+            "pending": pending,
+        })
+        submission_table.append([fid, name, submitted, pending])
+        req_data.append([obj.course.name,obj.request_by.username, obj.start_date, obj.end_date])
+    context["submission_table"] = submission_table
+    context["submission_data"] = json.dumps(submission_data)
+    context["req"] = len(req_data)
+    context["req_data"] = req_data
+    context["total_pending"] = json.dumps({"label":"Total pending feedback", "value":total_pending})
+    context["total_submitted"] = json.dumps({"label": "Total submitted feedback", "value" : total_submitted})
+    response_hist = []
+    for i in range(1,8):
+        date = (datetime.datetime.today() - datetime.timedelta(days=7-i)).date()
+        fdb = Feedback.objects.filter(created_at__date = date)
+        response_hist.append({
+            "date":date.__str__(),
+            "submissions": len(fdb)
+        })
+    context["sub_today"] = len(fdb)
+    context["response_hist"] = json.dumps(response_hist)
+
+    return render(request, 'main/home.html', context)
 
 def view_data(model_name, **kwargs):
     context = dict()

@@ -11,7 +11,7 @@ urlpatterns = [
     # Login page
     url(r'^login/$', login_forbidden(auth_views.login),{'template_name': 'main/login.html'}, name='login'),
     # Logout URL, redirects to index
-    url(r'^logout/$', auth_views.logout,{'template_name': 'main/home.html'}, name='logout'),
+    url(r'^logout/$', auth_views.logout,{'template_name': 'main/index.html'}, name='logout'),
     # Page to change password
     url(r'^passwordchange/$', views.mylogin_required(auth_views.password_change),{'template_name': 'main/pchange.html'}, name='password_change'),
     # Page to give success response of change
