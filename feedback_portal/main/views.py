@@ -72,6 +72,10 @@ def index(request):
     if request.user.id:
          return HttpResponseRedirect('/home')
     return render(request, 'main/index.html', {})
+    
+def radar(request):
+    
+    return render(request, 'main/radar.html', {})
 
 # ----------------------------------------------------------------------------------------
 # NOTE: No register function needed, please remove

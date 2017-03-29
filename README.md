@@ -21,3 +21,5 @@ Fields to be Queried
 3. rollno
 4. auth_token
 5. auth_expiry
+
+google-chrome --disable-web-security

@@ -30,6 +30,8 @@ urlpatterns = [
     url(r'^addCourseStudent/$', views.addCourseStudent, name='addCourseStudent'),
 
     url(r'^home/$', views.home, name='home'),
+    
+    url(r'^radar/$', views.radar, name='radar'),
 
     url(r'viewStudents/$', views.displayStu, name='viewStudents'),
 

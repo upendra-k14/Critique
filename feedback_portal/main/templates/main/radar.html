@@ -1,0 +1,54 @@
+{% extends "main/basic.html" %}
+
+{% block init_script %}
+  {% include 'main/pre_include.html' %}
+{% endblock %}
+
+{% block navbar %}
+  {% include 'main/navbar.html' %}
+{% endblock %}
+
+{% block sidebar %}
+  {% include 'main/sidebar.html' %}
+{% endblock %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <script type='text/javascript' src='https://www.gstatic.com/charts/loader.js'></script>
+    <script type='text/javascript'>
+    google.charts.load("current", {packages:["imagechart"]});
+    </script>
+    <script type='text/javascript'>
+      google.charts.setOnLoadCallback(drawChart);
+      function drawChart() {
+        var dataTable = new google.visualization.DataTable();
+        dataTable.addColumn('number');
+        dataTable.addRows([
+          [100],
+          [80],
+          [60],
+          [30],
+          [25],
+          [20],
+          [10],
+        ]);
+
+        var chart = new google.visualization.ImageChart(document.getElementById('radar_div'));
+
+        var options = {cht: 'r', chco: '00FF00,FF00FF', chg: '25.0,25.0,4.0,4.0', chm: 'B,FF000080,0,1.0,5.0|B,FF990080,1,1.0,5.0',};
+        chart.draw(dataTable, options);
+      }
+    </script>
+  </head>
+  <body>
+    <div id='radar_div' style="position:fixed;margin: 0;box-sizing: border-box;width: 50%;height: 50%;object-fit: contain;"></div>
+  </body>
+</html>
+
+{% endblock %}
+
+{% block post_script %}
+  {% include 'main/post_include.html' %}
+{% endblock %}
