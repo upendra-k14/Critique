@@ -33,6 +33,12 @@ urlpatterns = [
 
     url(r'^viewRequest/$', views.displayReq, name='viewRequest'),
 
+    url(r'^request/$', views.req_feed, name='RequestFeedback'),
+
+    url(r'^view/(?P<f_id>[0-9]+)$', views.viewFeedback, name='viewFeedback'),
+
+    url(r'^feedback/(?P<f_id>[0-9]+)$', views.showFeedback, name='showFeedback'),
+
     url(r'^api/mobile_login/$', views.mobile_login),
 
     url(r'^api/mobile_logout/$', views.mobile_logout),
@@ -42,7 +48,5 @@ urlpatterns = [
     url(r'^api/receive_feedback/$', views.receive_feedback),
 
     url(r'^api/check_session/$', views.check_session),
-
-    url(r'^request/$', views.req_feed),
 
 ]
