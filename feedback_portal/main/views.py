@@ -283,11 +283,12 @@ def addCourseStudent(request):
         f = TextIOWrapper(request.FILES['CSVFile'].file, encoding=request.encoding)
         reader = csv.reader(f.read().splitlines())
         for row in reader:
-            context = check_csv(row, 1)
-            if context != False:
-                return render(request, 'main/error.html', context)
             try:
-                Course.objects.create(name=row[0])
+                student= Student.objects.filter(user__username=row[0])[0]
+                for each in row[1:]:
+                    if each!='':
+                        course = Course.objects.filter(name=each)[0]
+                        CourseStudent.objects.create(course=course, student=student)
             except IntegrityError:
                 continue
         return render(request, 'main/home.html')
