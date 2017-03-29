@@ -126,8 +126,9 @@ def view_data(model_name):
     model = eval(model_name)
     field_names = model._meta.get_fields()
     required_fields = list()
+    token_fields = ['auth_token', 'auth_token_expiry']
     for field in field_names:
-        if not field.auto_created:
+        if not field.auto_created and str(field).split('.')[-1] not in token_fields:
             required_fields.append(field.name)
     data = model.objects.all()
     required_data = list()
@@ -163,7 +164,7 @@ def check_csv(row, field_nr):
         context['err_msg'] = 'The csv file contains unexpected data'
     elif any(val in (None, '', ' ') for val in row):
         context['err_msg'] = 'One of the fields seems to be empty'
-    elif any(re.search(r'[^A-Za-z0-9_@.]+', val) for val in row):
+    elif any(re.search(r'[^A-Za-z0-9_@. -]+', val) for val in row):
         context['err_msg'] = 'One of the fields seems to have special characters'
     context['err_at'] = ', '.join(row)
     if 'err_msg' in context:
@@ -186,7 +187,7 @@ def addStudents(request):
                     return render(request,'main/error.html',context)
 
                 try:
-                    user_instance = User.objects.create(username=row[0])
+                    user_instance = User.objects.create_user(username=row[0], password='iiits@123')
                     Student.objects.create(user=user_instance, rollno = row[1])
 
                 except IntegrityError:
@@ -212,7 +213,7 @@ def addProfessor(request):
                 return render(request, 'main/error.html', context)
 
             try:
-                user_instance = User.objects.create(username=row[1])
+                user_instance = User.objects.create_user(username=row[1], password='iiits@123')
                 Professor.objects.create(user=user_instance, fullname=row[0])
             except IntegrityError:
                 continue
@@ -238,7 +239,7 @@ def addAdmin(request):
                 return render(request, 'main/error.html', context)
 
             try:
-                user_instance = User.objects.create(username=row[0])
+                user_instance = User.objects.create_user(username=row[0], password='iiits@123')
                 Admin.objects.create(user=user_instance)
             except IntegrityError:
                 continue
@@ -247,7 +248,79 @@ def addAdmin(request):
         form = FileForm()
         context['form'] = form
         context['name'] = 'Adminstrator'
-        return render(request, 'main/upload.html', context)  # Ignore PEP8Bear
+        return render(request, 'main/upload.html', context)
+
+@mylogin_required
+def addCourse(request):
+    context = dict()
+    if request.method == 'POST':
+        if not (request.FILES):
+            return self.construct_form(request, True, False)
+        f = TextIOWrapper(request.FILES['CSVFile'].file, encoding=request.encoding)
+        reader = csv.reader(f.read().splitlines())
+        for row in reader:
+            context = check_csv(row, 1)
+            if context != False:
+                return render(request, 'main/error.html', context)
+            try:
+                Course.objects.create(name=row[0])
+            except IntegrityError:
+                continue
+        return render(request, 'main/home.html')
+    else:
+        form = FileForm()
+        context['form'] = form
+        context['name'] = 'Course'
+        return render(request, 'main/upload.html', context)
+
+
+#incomplete
+def addCourseStudent(request):
+    context = dict()
+    if request.method == 'POST':
+        if not (request.FILES):
+            return self.construct_form(request, True, False)
+        f = TextIOWrapper(request.FILES['CSVFile'].file, encoding=request.encoding)
+        reader = csv.reader(f.read().splitlines())
+        for row in reader:
+            try:
+                student= Student.objects.filter(user__username=row[0])[0]
+                for each in row[1:]:
+                    if each!='':
+                        course = Course.objects.filter(name=each)[0]
+                        CourseStudent.objects.create(course=course, student=student)
+            except IntegrityError:
+                continue
+        return render(request, 'main/home.html')
+    else:
+        form = FileForm()
+        context['form'] = form
+        context['name'] = 'Course'
+        return render(request, 'main/upload.html', context)
+
+def addCourseProfessor(request):
+    context = dict()
+    if request.method == 'POST':
+        if not (request.FILES):
+            return self.construct_form(request, True, False)
+        f = TextIOWrapper(request.FILES['CSVFile'].file, encoding=request.encoding)
+        reader = csv.reader(f.read().splitlines())
+        for row in reader:
+            try:
+                prof = Professor.objects.filter(fullname=row[0])[0]
+                # prof = Professor.objects.filter(user__username=row[0])[0]
+                for each in row[1:]:
+                    if each!='':
+                        course = Course.objects.filter(name=each)[0]
+                        CourseProfessor.objects.create(course=course, professor=prof)
+            except IntegrityError:
+                continue
+        return render(request, 'main/home.html')
+    else:
+        form = FileForm()
+        context['form'] = form
+        context['name'] = 'Course Professor relations'
+        return render(request, 'main/upload.html', context)
 
 @mylogin_required
 def viewFeedback(request, f_id):

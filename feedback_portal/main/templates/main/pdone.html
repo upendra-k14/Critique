@@ -1,0 +1,47 @@
+{% extends "main/basic.html" %}
+
+{% block init_script %}
+  {% include 'main/pre_include.html' %}
+{% endblock %}
+
+{% block navbar %}
+  {% include 'main/navbar.html' %}
+{% endblock %}
+
+{% block sidebar %}
+  {% include 'main/sidebar.html' %}
+{% endblock %}
+
+{% block content %}
+<section id="form">
+        <br><br>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 col-lg-offset-2">
+                    <form name="sentMessage" id="contactForm" method="POST" action="" enctype="multipart/form-data" novalidate>{% csrf_token %}
+                        <div class="row control-group">
+                            <div class="form-group col-xs-12 label-form-group controls">
+                                <style>
+                                    .helptext{
+                                        font-size:13px;
+                                    }
+                                </style>
+                                {{form.as_p}}
+                            </div>
+                        </div>
+                        <input type="hidden" name="classes" value="true"/>
+                        <div class="row">
+                            <div class="form-group col-xs-12">
+                                <p>Password changed successfuly</p>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+</section>
+{% endblock %}
+
+{% block post_script %}
+  {% include 'main/post_include.html' %}
+{% endblock %}
