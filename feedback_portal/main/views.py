@@ -3,6 +3,7 @@ import re
 import pdb
 import hashlib
 import datetime
+import json
 
 from io import TextIOWrapper
 from random import choice
@@ -33,6 +34,8 @@ from django.shortcuts import render
 from django.template.response import TemplateResponse
 from django.core.mail import send_mail
 from django.utils import timezone
+from django.http import Http404
+
 
 from .forms import *
 from .models import *
@@ -55,10 +58,19 @@ def mylogin_required(function):
 # NOTE: Create a good welcome page and link it to index. Till then,
 # function can be used to test other pages
 
+def permission_required(function):
+    def wrap(request, *args, **kwargs):
+        if not hasattr(request.user, 'admin'):
+           return HttpResponseRedirect('/home')
+        return function(request, *args, **kwargs)
+    wrap.__doc__ = function.__doc__
+    wrap.__name__ = function.__name__
+    return wrap
+
 
 def index(request):
     context = dict()
-    return render(request, 'main/home.html', context)
+    return render(request, 'main/index.html', context)
 
 # ----------------------------------------------------------------------------------------
 # NOTE: No register function needed, please remove
@@ -86,9 +98,9 @@ def req_feed(request):
     if request.method == 'POST':
         form = RequestFeedback()
         form.request_by = request.user
-
         try:
-            form.course = Course.objects.filter(name = request.POST['course'])[0]
+            print(request.POST['course'])
+            form.course = Course.objects.filter(id = int(request.POST['course']))[0]
         except ValueError:
             context["inv_course"] = True
             return render(request, template_name, context)
@@ -107,15 +119,27 @@ def displayReq(request):
 
 @mylogin_required
 def home(request):
-    return render(request, 'main/home.html', {})
+    result = RequestFeedback.objects.all()
+    data = []
+    for obj in result:
+        course_data = []
+        course_data.append(obj.course.name)
+        course_data.append(obj.request_by.username)
+        course_data.append(obj.start_date)
+        course_data.append(obj.end_date)
+        data.append(course_data)
+    return render(request, 'main/home.html', {"data": data})
 
-def view_data(model_name):
+def view_data(model_name, **kwargs):
     context = dict()
     model = eval(model_name)
     field_names = model._meta.get_fields()
     required_fields = list()
+    unimp_fields = []
+    if 'fields' in kwargs:
+        unimp_fields = kwargs.pop('fields')
     for field in field_names:
-        if not field.auto_created:
+        if not field.auto_created and str(field).split('.')[-1] not in unimp_fields:
             required_fields.append(field.name)
     data = model.objects.all()
     required_data = list()
@@ -131,7 +155,7 @@ def view_data(model_name):
 
 
 def displayStu(request):
-    return render(request, 'main/tables.html', view_data('Student'))
+    return render(request, 'main/tables.html', view_data('Student', fields=['auth_token', 'auth_token_expiry']))
 
 
 def displayAdm(request):
@@ -140,6 +164,15 @@ def displayAdm(request):
 
 def displayPro(request):
     return render(request, 'main/tables.html', view_data('Professor'))
+
+def displayCourse(request):
+    return render(request, 'main/tables.html', view_data('Course', fields=['student', 'professor']))
+
+def displayCourseStudent(request):
+    return render(request, 'main/tables.html', view_data('CourseStudent'))
+
+def displayCourseProfessor(request):
+    return render(request, 'main/tables.html', view_data('CourseProfessor'))
 
 
 def check_csv(row, field_nr):
@@ -151,7 +184,7 @@ def check_csv(row, field_nr):
         context['err_msg'] = 'The csv file contains unexpected data'
     elif any(val in (None, '', ' ') for val in row):
         context['err_msg'] = 'One of the fields seems to be empty'
-    elif any(re.search(r'[^A-Za-z0-9_@.]+', val) for val in row):
+    elif any(re.search(r'[^A-Za-z0-9_@. -]+', val) for val in row):
         context['err_msg'] = 'One of the fields seems to have special characters'
     context['err_at'] = ', '.join(row)
     if 'err_msg' in context:
@@ -161,6 +194,7 @@ def check_csv(row, field_nr):
 
 
 @mylogin_required
+@permission_required
 def addStudents(request):
     context = dict()
     if request.method=='POST':
@@ -174,12 +208,12 @@ def addStudents(request):
                     return render(request,'main/error.html',context)
 
                 try:
-                    user_instance = User.objects.create(username=row[0])
+                    user_instance = User.objects.create_user(username=row[0], password='iiits@123')
                     Student.objects.create(user=user_instance, rollno = row[1])
 
                 except IntegrityError:
                     continue
-            return render(request,'main/tables.html',view_data('Student'))
+            return render(request,'main/tables.html',view_data('Student', fields=['auth_token', 'auth_token_expiry']))
     else:
         form = FileForm()
         context['form'] = form
@@ -187,6 +221,7 @@ def addStudents(request):
         return render(request,'main/upload.html',context)
 
 @mylogin_required
+@permission_required
 def addProfessor(request):
     context = dict()
     if request.method == 'POST':
@@ -200,7 +235,7 @@ def addProfessor(request):
                 return render(request, 'main/error.html', context)
 
             try:
-                user_instance = User.objects.create(username=row[1])
+                user_instance = User.objects.create_user(username=row[1], password='iiits@123')
                 Professor.objects.create(user=user_instance, fullname=row[0])
             except IntegrityError:
                 continue
@@ -213,6 +248,7 @@ def addProfessor(request):
 
 
 @mylogin_required
+@permission_required
 def addAdmin(request):
     context = dict()
     if request.method == 'POST':
@@ -226,7 +262,7 @@ def addAdmin(request):
                 return render(request, 'main/error.html', context)
 
             try:
-                user_instance = User.objects.create(username=row[0])
+                user_instance = User.objects.create_user(username=row[0], password='iiits@123')
                 Admin.objects.create(user=user_instance)
             except IntegrityError:
                 continue
@@ -235,8 +271,119 @@ def addAdmin(request):
         form = FileForm()
         context['form'] = form
         context['name'] = 'Adminstrator'
-        return render(request, 'main/upload.html', context)  # Ignore PEP8Bear
+        return render(request, 'main/upload.html', context)
 
+@mylogin_required
+@permission_required
+def addCourse(request):
+    context = dict()
+    if request.method == 'POST':
+        if not (request.FILES):
+            return self.construct_form(request, True, False)
+        f = TextIOWrapper(request.FILES['CSVFile'].file, encoding=request.encoding)
+        reader = csv.reader(f.read().splitlines())
+        for row in reader:
+            context = check_csv(row, 1)
+            if context != False:
+                return render(request, 'main/error.html', context)
+            try:
+                Course.objects.create(name=row[0])
+            except IntegrityError:
+                continue
+        return render(request, 'main/tables.html', view_data('Course', fields=['professor', 'student']))
+    else:
+        form = FileForm()
+        context['form'] = form
+        context['name'] = 'Course'
+        return render(request, 'main/upload.html', context)
+
+@mylogin_required
+@permission_required
+def addCourseStudent(request):
+    context = dict()
+    if request.method == 'POST':
+        if not (request.FILES):
+            return self.construct_form(request, True, False)
+        f = TextIOWrapper(request.FILES['CSVFile'].file, encoding=request.encoding)
+        reader = csv.reader(f.read().splitlines())
+        for row in reader:
+            try:
+                student= Student.objects.filter(user__username=row[0])[0]
+                for each in row[1:]:
+                    if each!='':
+                        course = Course.objects.filter(name=each)[0]
+                        CourseStudent.objects.create(course=course, student=student)
+            except IntegrityError:
+                continue
+        return render(request, 'main/tables.html', view_data('CourseStudent'))
+    else:
+        form = FileForm()
+        context['form'] = form
+        context['name'] = 'Course'
+        return render(request, 'main/upload.html', context)
+
+@mylogin_required
+@permission_required
+def addCourseProfessor(request):
+    context = dict()
+    if request.method == 'POST':
+        if not (request.FILES):
+            return self.construct_form(request, True, False)
+        f = TextIOWrapper(request.FILES['CSVFile'].file, encoding=request.encoding)
+        reader = csv.reader(f.read().splitlines())
+        for row in reader:
+            try:
+                prof = Professor.objects.filter(fullname=row[0])[0]
+                # prof = Professor.objects.filter(user__username=row[0])[0]
+                for each in row[1:]:
+                    if each!='':
+                        course = Course.objects.filter(name=each)[0]
+                        CourseProfessor.objects.create(course=course, professor=prof)
+            except IntegrityError:
+                continue
+        return render(request, 'main/tables.html', view_data('CourseProfessor'))
+    else:
+        form = FileForm()
+        context['form'] = form
+        context['name'] = 'Course Professor relations'
+        return render(request, 'main/upload.html', context)
+
+@mylogin_required
+def viewFeedback(request, f_id):
+    if request.method == 'GET':
+        fdb_req= RequestFeedback.objects.filter(pk=f_id)
+        if len(fdb_req) == 0:
+            raise Http404
+        else:
+            fdb_req = fdb_req[0]
+            course = fdb_req.course.name
+            fdb = Feedback.objects.filter(fid = f_id)
+            feedbacks = list()
+            for f in fdb:
+                feedbacks.append( [str(f.id), f.fid.request_by.__str__(), f.created_at.__str__()] )
+            return render(request, 'main/view.html', {"feedbacks" :feedbacks, "course":course })
+
+@mylogin_required
+def showFeedback(request, f_id):
+    if request.method == 'GET':
+        feedbacks = Feedback.objects.filter(pk=f_id)
+        if len(feedbacks) == 0:
+            raise Http404
+        else:
+            feedback = json.loads(feedbacks[0].feedback)
+            answers = [(x, feedback[x]) for x in feedback.keys()]
+            return render(request, 'main/feedback.html', {"feedbacks" : answers, "fid" : f_id })
+
+def visualiseFeedback(request, course_id):
+    if request.method == "GET":
+        course = Course.objects.filter(pk=course_id)
+        if len(course)==0:
+            raise Http404
+        else:
+            course = course[0]
+            feedbacks = Feedback.objects.filter(course=course)
+            responses = [josn.loads(feedback.feedback) for feedback in feedbacks]
+            pass
 
 def serialize_datetime(obj):
     """JSON serializer for objects not serializable by default json code"""
@@ -461,3 +608,8 @@ def receive_feedback(request):
 
     else:
         return JsonResponse({'message':'wrong request'})
+
+def extract_lang_properties(data):
+    combined_operations = ['keyword', 'concept', 'doc-sentiment']
+    alchemy_language = watson_developer_cloud.AlchemyLanguageV1(api_key='ddc135d16a20f8e4a6b04bba9e60e8fde322d49f')
+    return alchemy_language.combined(text=data, extract=combined_operations)

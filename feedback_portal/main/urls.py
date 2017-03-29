@@ -23,6 +23,12 @@ urlpatterns = [
 
     url(r'^addProfessor/$', views.addProfessor, name='addProfessor'),
 
+    url(r'^addCourse/$', views.addCourse, name='addCourse'),
+
+    url(r'^addCourseProfessor/$', views.addCourseProfessor, name='addCourseProfessor'),
+
+    url(r'^addCourseStudent/$', views.addCourseStudent, name='addCourseStudent'),
+
     url(r'^home/$', views.home, name='home'),
 
     url(r'viewStudents/$', views.displayStu, name='viewStudents'),
@@ -31,7 +37,21 @@ urlpatterns = [
 
     url(r'^viewProfessor/$', views.displayPro, name='viewProfessor'),
 
+    url(r'viewCourses/$', views.displayCourse, name='viewCourses'),
+
+    url(r'^viewCourseProfessor/$', views.displayCourseProfessor, name='viewCourseProfessor'),
+
+    url(r'^viewCourseStudent/$', views.displayCourseStudent, name='viewCourseStudent'),
+
     url(r'^viewRequest/$', views.displayReq, name='viewRequest'),
+
+    url(r'^request/$', views.req_feed, name='RequestFeedback'),
+
+    url(r'^view/(?P<f_id>[0-9]+)$', views.viewFeedback, name='viewFeedback'),
+
+    url(r'^feedback/(?P<f_id>[0-9]+)$', views.showFeedback, name='showFeedback'),
+
+    url(r'^visualise/(?P<course_id>[0-9]+)$', views.visualiseFeedback, name='visualiseFeedback'),
 
     url(r'^api/mobile_login/$', views.mobile_login),
 
@@ -42,7 +62,5 @@ urlpatterns = [
     url(r'^api/receive_feedback/$', views.receive_feedback),
 
     url(r'^api/check_session/$', views.check_session),
-
-    url(r'^request/$', views.req_feed),
 
 ]

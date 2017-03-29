@@ -54,7 +54,7 @@ class Course(models.Model):
     """
     Each course has many users and many tasks.
     """
-    name = models.CharField(max_length=128, primary_key=True)
+    name = models.CharField(max_length=128, unique=True)
     student = models.ManyToManyField(Student, through='CourseStudent')
     professor = models.ManyToManyField(Professor, through='CourseProfessor')
 
@@ -72,10 +72,11 @@ class CourseProfessor(models.Model):
     professor = models.ForeignKey(Professor)
 
     def __str__(self):
-        return self.professor.user.username
+        return self.professor.fullname+'-'+self.course.name
 
     class Meta:
         verbose_name_plural = 'Course Professors'
+        unique_together = ('course','professor')
 
 class CourseStudent(models.Model):
     """
@@ -92,6 +93,7 @@ class CourseStudent(models.Model):
 
     class Meta:
         verbose_name_plural = 'Course Students'
+        unique_together = ('course','student')
 
 class RequestFeedback(models.Model):
     course = models.ForeignKey(Course)

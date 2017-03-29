@@ -111,6 +111,9 @@ class FileForm(forms.ModelForm):
         model = FileUpload
         fields = ['CSVFile', ]
 
+class CourseStudentForm(FileForm):
+    CourseList = forms.CharField(label="Order of Course Names in the csv")
+
 class FeedbackRequestForm(forms.ModelForm):
     class Meta:
         model = RequestFeedback
