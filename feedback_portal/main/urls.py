@@ -37,6 +37,12 @@ urlpatterns = [
 
     url(r'^viewProfessor/$', views.displayPro, name='viewProfessor'),
 
+    url(r'viewCourses/$', views.displayCourse, name='viewCourses'),
+
+    url(r'^viewCourseProfessor/$', views.displayCourseProfessor, name='viewCourseProfessor'),
+
+    url(r'^viewCourseStudent/$', views.displayCourseStudent, name='viewCourseStudent'),
+
     url(r'^viewRequest/$', views.displayReq, name='viewRequest'),
 
     url(r'^request/$', views.req_feed, name='RequestFeedback'),
