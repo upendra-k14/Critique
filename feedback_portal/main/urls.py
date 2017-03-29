@@ -63,4 +63,6 @@ urlpatterns = [
 
     url(r'^api/check_session/$', views.check_session),
 
+    url(r'^api/mobileChangePassword/$', views.mobile_changee_password),
+
 ]
