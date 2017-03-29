@@ -61,7 +61,7 @@ def mylogin_required(function):
 
 def index(request):
     context = dict()
-    return render(request, 'main/home.html', context)
+    return render(request, 'main/index.html', context)
 
 # ----------------------------------------------------------------------------------------
 # NOTE: No register function needed, please remove
@@ -274,6 +274,17 @@ def showFeedback(request, f_id):
             feedback = json.loads(feedbacks[0].feedback)
             answers = [(x, feedback[x]) for x in feedback.keys()]
             return render(request, 'main/feedback.html', {"feedbacks" : answers, "fid" : f_id })
+
+def visualiseFeedback(request, course_id):
+    if request.method == "GET":
+        course = Course.objects.filter(pk=course_id)
+        if len(course)==0:
+            raise Http404
+        else:
+            course = course[0]
+            feedbacks = Feedback.objects.filter(course=course)
+            responses = [josn.loads(feedback.feedback) for feedback in feedbacks]
+            pass
 
 def serialize_datetime(obj):
     """JSON serializer for objects not serializable by default json code"""
@@ -498,7 +509,7 @@ def receive_feedback(request):
 
     else:
         return JsonResponse({'message':'wrong request'})
-    
+
 def extract_lang_properties(data):
     combined_operations = ['keyword', 'concept', 'doc-sentiment']
     alchemy_language = watson_developer_cloud.AlchemyLanguageV1(api_key='ddc135d16a20f8e4a6b04bba9e60e8fde322d49f')
