@@ -35,7 +35,10 @@ from django.template.response import TemplateResponse
 from django.core.mail import send_mail
 from django.utils import timezone
 from django.http import Http404
+from django.urls import reverse
 
+# Importing background task manager for analyzing feedback
+from background_task import background
 
 from .forms import *
 from .models import *
@@ -72,9 +75,9 @@ def index(request):
     if request.user.id:
          return HttpResponseRedirect('/home')
     return render(request, 'main/index.html', {})
-    
+
 def radar(request):
-    
+
     return render(request, 'main/radar.html', {})
 
 # ----------------------------------------------------------------------------------------
@@ -120,7 +123,8 @@ def req_feed(request):
         return render(request, template_name, context)
 
 def displayReq(request):
-    return render(request, 'main/tables.html', view_data('RequestFeedback'))
+    return render(request,'main/tables.html',
+        view_data('RequestFeedback', parent_view='displayReq'))
 
 @mylogin_required
 def home(request):
@@ -167,28 +171,67 @@ def home(request):
     return render(request, 'main/home.html', context)
 
 def view_data(model_name, **kwargs):
-    context = dict()
-    model = eval(model_name)
-    field_names = model._meta.get_fields()
-    required_fields = list()
-    unimp_fields = []
-    if 'fields' in kwargs:
-        unimp_fields = kwargs.pop('fields')
-    for field in field_names:
-        if not field.auto_created and str(field).split('.')[-1] not in unimp_fields:
-            required_fields.append(field.name)
-    data = model.objects.all()
-    required_data = list()
-    for each in data:
-        row_data = list()
-        for field in required_fields:
-            row_data.append(getattr(each, field))  # Ignore PEP8Bear
-        required_data.append(row_data)
-    context['data'] = required_data
-    context['fields'] = required_fields
-    context['model_name'] = model_name
-    return context
-
+    if 'parent_view' in kwargs:
+        if kwargs['parent_view'] == 'displayReq':
+            context = dict()
+            model = eval(model_name)
+            field_names = model._meta.get_fields()
+            required_fields = list()
+            unimp_fields = []
+            if 'fields' in kwargs:
+                unimp_fields = kwargs.pop('fields')
+            for field in field_names:
+                if not field.auto_created and str(field).split('.')[-1] not in unimp_fields:
+                    required_fields.append(field)
+            data = model.objects.all()
+            required_data = list()
+            for each in data:
+                row_data = list()
+                for field in required_fields:
+                    if field.name == "course":
+                        row_data.append("""<a href="{}">{}</a>""".format(
+                            reverse('viewFeedback', args=[each.id]),
+                            getattr(each, field.name)))
+                    else:
+                        row_data.append(getattr(each, field.name))  # Ignore PEP8Bear
+                if datetime.date.today() - each.end_date >= datetime.timedelta(days=1):
+                    row_data.append("""<a href="{}">{}</a>""".format(
+                        "#",
+                        "<i class='fa fa-bar-chart-o fw'></i> <span>&nbsp</span> <span style='color:green'>Completed</span>"
+                    ))
+                else:
+                    row_data.append("""<a href="{}">{}</a>""".format(
+                        "#",
+                        "<i class='fa fa-clock-o fw'></i> <span>&nbsp</span> <span style='color:red'>Pending</span>"
+                    ))
+                required_data.append(row_data)
+            context['data'] = required_data
+            context['fields'] = [f.verbose_name for f in required_fields]
+            context['fields'].append('Visualize')
+            context['model_name'] = model_name
+            return context
+    else:
+        context = dict()
+        model = eval(model_name)
+        field_names = model._meta.get_fields()
+        required_fields = list()
+        unimp_fields = []
+        if 'fields' in kwargs:
+            unimp_fields = kwargs.pop('fields')
+        for field in field_names:
+            if not field.auto_created and str(field).split('.')[-1] not in unimp_fields:
+                required_fields.append(field.name)
+        data = model.objects.all()
+        required_data = list()
+        for each in data:
+            row_data = list()
+            for field in required_fields:
+                row_data.append(getattr(each, field))  # Ignore PEP8Bear
+            required_data.append(row_data)
+        context['data'] = required_data
+        context['fields'] = required_fields
+        context['model_name'] = model_name
+        return context
 
 def displayStu(request):
     return render(request, 'main/tables.html', view_data('Student', fields=['auth_token', 'auth_token_expiry']))
@@ -410,16 +453,17 @@ def showFeedback(request, f_id):
             answers = [(x, feedback[x]) for x in feedback.keys()]
             return render(request, 'main/feedback.html', {"feedbacks" : answers, "fid" : f_id })
 
-def visualiseFeedback(request, course_id):
+def visualiseFeedback(request, f_id):
     if request.method == "GET":
-        course = Course.objects.filter(pk=course_id)
-        if len(course)==0:
+        req_object_list = RequestFeedback.objects.filter(id=f_id)
+        if len(req_object)==0:
             raise Http404
         else:
-            course = course[0]
-            feedbacks = Feedback.objects.filter(course=course)
-            responses = [josn.loads(feedback.feedback) for feedback in feedbacks]
-            pass
+            requested_fobject = req_object_list[0]
+            feedbacks = Feedback.objects.filter(fid=requested_fobject)
+            responses = [json.loads(feedback.feedback) for feedback in feedbacks]
+            data = {}
+            return render(request, 'main/visualize.html', context=data)
 
 def serialize_datetime(obj):
     """JSON serializer for objects not serializable by default json code"""
@@ -625,9 +669,12 @@ def receive_feedback(request):
                     student = sobject,
                     course = course_object,
                     fid = request_object,
-                    feedback = json_feedback)
+                    feedback = json_feedback,
+                    analyzed_text = "\{\}")
 
                 if created:
+                    # Run a background task when feedback is recieved
+                    get_analyzed_text((request_object.id,1))
                     return JsonResponse({'message':'submitted feedback'})
                 else:
                     return JsonResponse(
@@ -647,8 +694,29 @@ def receive_feedback(request):
 
 def extract_lang_properties(data):
     combined_operations = ['keyword', 'concept', 'doc-sentiment']
-    alchemy_language = watson_developer_cloud.AlchemyLanguageV1(api_key='ddc135d16a20f8e4a6b04bba9e60e8fde322d49f')
-    return alchemy_language.combined(text=data, extract=combined_operations)
+    try:
+        alchemy_language = watson_developer_cloud.AlchemyLanguageV1(api_key='ddc135d16a20f8e4a6b04bba9e60e8fde322d49f')
+        return alchemy_language.combined(text=data, extract=combined_operations)
+    except:
+        return None
+
+@background(schedule=10)
+def get_analyzed_text(args):
+    request_id = args[0]
+    counter = args[1]
+    response_feedback_object = Feedback.objects.filter(fid__id=request_id)
+    if response_feedback_object!=None:
+        key_text = "Anything else you care to share or get off your chest?"
+        f_object = response_feedback_object[0]
+        feedback_text = f_object.feedback[key_text]
+        analyzed_text = extract_lang_properties(feedback_text)
+        if analyzed_text != None:
+            f_object.analyzed_text = analyzed_text
+            f_object.is_analyzed = True
+            f_object.save()
+        else:
+            if counter<6:
+                get_analyzed_text((request_id, counter+1), schedule=timedelta(days=1))
 
 @csrf_exempt
 def mobile_changee_password(request):

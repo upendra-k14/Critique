@@ -12,8 +12,14 @@ class FileUpload(models.Model):
 
 # Create your models here.
 class Student(models.Model):
-    user = models.OneToOneField(User, primary_key=True, on_delete= models.CASCADE)
-    rollno = models.CharField(unique=True, max_length=11)
+    user = models.OneToOneField(
+        User,
+        primary_key=True,
+        on_delete= models.CASCADE)
+    rollno = models.CharField(
+        unique=True,
+        max_length=11,
+        verbose_name="Roll No")
     auth_token = models.CharField(default='notoken', max_length=256)
     auth_token_expiry = models.DateTimeField(
         default=datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc))
@@ -33,7 +39,7 @@ class Student(models.Model):
 
 class Professor(models.Model):
     user = models.OneToOneField(User, primary_key=True, on_delete= models.CASCADE)
-    fullname = models.CharField(max_length=100, default = 'FULLNAME')
+    fullname = models.CharField(max_length=100, default = 'FULLNAME', verbose_name="Full Name")
 
     def __str__(self):
         return self.user.username
@@ -54,7 +60,7 @@ class Course(models.Model):
     """
     Each course has many users and many tasks.
     """
-    name = models.CharField(max_length=128, unique=True)
+    name = models.CharField(max_length=128, unique=True, verbose_name="Course Name")
     student = models.ManyToManyField(Student, through='CourseStudent')
     professor = models.ManyToManyField(Professor, through='CourseProfessor')
 
@@ -96,10 +102,14 @@ class CourseStudent(models.Model):
         unique_together = ('course','student')
 
 class RequestFeedback(models.Model):
-    course = models.ForeignKey(Course)
-    request_by = models.ForeignKey(User)
-    start_date = models.DateField(default= datetime.date.today())
-    end_date = models.DateField(default= datetime.date.today() + datetime.timedelta(days=10))
+    course = models.ForeignKey(
+        Course, verbose_name="Course Name")
+    request_by = models.ForeignKey(
+        User, verbose_name="Requested By")
+    start_date = models.DateField(
+        default= datetime.date.today(), verbose_name="Start Date")
+    end_date = models.DateField(
+        default= datetime.date.today() + datetime.timedelta(days=10), verbose_name="End Date")
 
     def __str__(self):
         return self.course.name
@@ -119,6 +129,8 @@ class Feedback(models.Model):
     #coursestudent = models.ForeignKey(CourseStudent)
     fid = models.ForeignKey(RequestFeedback)
     feedback = JSONField()
+    analyzed_text = JSONField()
+    is_analyzed = models.BooleanField(default=False)
     created_at = models.DateTimeField( auto_now_add = True, blank = True)
 
     def __str__(self):
