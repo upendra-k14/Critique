@@ -4,6 +4,7 @@ import pdb
 import hashlib
 import datetime
 import json
+import watson_developer_cloud
 
 from io import TextIOWrapper
 from random import choice
@@ -671,10 +672,23 @@ def receive_feedback(request):
                     fid = request_object,
                     feedback = json_feedback,
                     analyzed_text = "\{\}")
-
+                feed_id = feedback_object.id
                 if created:
                     # Run a background task when feedback is recieved
-                    get_analyzed_text((request_object.id,1))
+                    print("created..getting text")
+                    #get_analyzed_text((request_object.id,1))
+                    f_object = Feedback.objects.get(id=feed_id)
+                    if f_object!=None:
+                        key_text = "Anything else you care to share or get off your chest?"
+                        print(f_object)
+                        feedback_text = json.loads(f_object.feedback)[key_text]
+                        print(feedback_text)
+                        analyzed_text = extract_lang_properties(feedback_text)
+                        print(analyzed_text)
+                        if analyzed_text != None:
+                            f_object.analyzed_text = analyzed_text
+                            f_object.is_analyzed = True
+                            f_object.save()
                     return JsonResponse({'message':'submitted feedback'})
                 else:
                     return JsonResponse(
@@ -695,28 +709,34 @@ def receive_feedback(request):
 def extract_lang_properties(data):
     combined_operations = ['keyword', 'concept', 'doc-sentiment']
     try:
-        alchemy_language = watson_developer_cloud.AlchemyLanguageV1(api_key='ddc135d16a20f8e4a6b04bba9e60e8fde322d49f')
+        alchemy_language = watson_developer_cloud.AlchemyLanguageV1(api_key='b373f7d8d360b566822a018ad5b048a19bc9d1c9')
         return alchemy_language.combined(text=data, extract=combined_operations)
     except:
         return None
 
-@background(schedule=10)
-def get_analyzed_text(args):
-    request_id = args[0]
-    counter = args[1]
-    response_feedback_object = Feedback.objects.filter(fid__id=request_id)
-    if response_feedback_object!=None:
-        key_text = "Anything else you care to share or get off your chest?"
-        f_object = response_feedback_object[0]
-        feedback_text = f_object.feedback[key_text]
-        analyzed_text = extract_lang_properties(feedback_text)
-        if analyzed_text != None:
-            f_object.analyzed_text = analyzed_text
-            f_object.is_analyzed = True
-            f_object.save()
-        else:
-            if counter<6:
-                get_analyzed_text((request_id, counter+1), schedule=timedelta(days=1))
+# @background(schedule=0)
+# def get_analyzed_text(args):
+#     request_id = args[0]
+#     print(request_id)
+#     counter = args[1]
+#     print(counter)
+#     response_feedback_object = Feedback.objects.filter(fid__id=request_id)
+#     print(len(response_feedback_object))
+#     if response_feedback_object!=None:
+#         key_text = "Anything else you care to share or get off your chest?"
+#         f_object = response_feedback_object[0]
+#         print(f_object)
+#         feedback_text = f_object.feedback[key_text]
+#         print(feedback_text)
+#         analyzed_text = extract_lang_properties(feedback_text)
+#         print(analyzed_text)
+#         if analyzed_text != None:
+#             f_object.analyzed_text = analyzed_text
+#             f_object.is_analyzed = True
+#             f_object.save()
+#         else:
+#             if counter<6:
+#                 get_analyzed_text((request_id, counter+1), schedule=timedelta(days=1))
 
 @csrf_exempt
 def mobile_changee_password(request):
