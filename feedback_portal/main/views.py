@@ -58,6 +58,15 @@ def mylogin_required(function):
 # NOTE: Create a good welcome page and link it to index. Till then,
 # function can be used to test other pages
 
+def permission_required(function):
+    def wrap(request, *args, **kwargs):
+        if not hasattr(request.user, 'admin'):
+           return HttpResponseRedirect('/home')
+        return function(request, *args, **kwargs)
+    wrap.__doc__ = function.__doc__
+    wrap.__name__ = function.__name__
+    return wrap
+
 
 def index(request):
     context = dict()
@@ -121,14 +130,16 @@ def home(request):
         data.append(course_data)
     return render(request, 'main/home.html', {"data": data})
 
-def view_data(model_name):
+def view_data(model_name, **kwargs):
     context = dict()
     model = eval(model_name)
     field_names = model._meta.get_fields()
     required_fields = list()
-    token_fields = ['auth_token', 'auth_token_expiry']
+    unimp_fields = []
+    if 'fields' in kwargs:
+        unimp_fields = kwargs.pop('fields')
     for field in field_names:
-        if not field.auto_created and str(field).split('.')[-1] not in token_fields:
+        if not field.auto_created and str(field).split('.')[-1] not in unimp_fields:
             required_fields.append(field.name)
     data = model.objects.all()
     required_data = list()
@@ -144,7 +155,7 @@ def view_data(model_name):
 
 
 def displayStu(request):
-    return render(request, 'main/tables.html', view_data('Student'))
+    return render(request, 'main/tables.html', view_data('Student', fields=['auth_token', 'auth_token_expiry']))
 
 
 def displayAdm(request):
@@ -153,6 +164,15 @@ def displayAdm(request):
 
 def displayPro(request):
     return render(request, 'main/tables.html', view_data('Professor'))
+
+def displayCourse(request):
+    return render(request, 'main/tables.html', view_data('Course', fields=['student', 'professor']))
+
+def displayCourseStudent(request):
+    return render(request, 'main/tables.html', view_data('CourseStudent'))
+
+def displayCourseProfessor(request):
+    return render(request, 'main/tables.html', view_data('CourseProfessor'))
 
 
 def check_csv(row, field_nr):
@@ -174,6 +194,7 @@ def check_csv(row, field_nr):
 
 
 @mylogin_required
+@permission_required
 def addStudents(request):
     context = dict()
     if request.method=='POST':
@@ -192,7 +213,7 @@ def addStudents(request):
 
                 except IntegrityError:
                     continue
-            return render(request,'main/tables.html',view_data('Student'))
+            return render(request,'main/tables.html',view_data('Student', fields=['auth_token', 'auth_token_expiry']))
     else:
         form = FileForm()
         context['form'] = form
@@ -200,6 +221,7 @@ def addStudents(request):
         return render(request,'main/upload.html',context)
 
 @mylogin_required
+@permission_required
 def addProfessor(request):
     context = dict()
     if request.method == 'POST':
@@ -226,6 +248,7 @@ def addProfessor(request):
 
 
 @mylogin_required
+@permission_required
 def addAdmin(request):
     context = dict()
     if request.method == 'POST':
@@ -251,6 +274,7 @@ def addAdmin(request):
         return render(request, 'main/upload.html', context)
 
 @mylogin_required
+@permission_required
 def addCourse(request):
     context = dict()
     if request.method == 'POST':
@@ -266,15 +290,15 @@ def addCourse(request):
                 Course.objects.create(name=row[0])
             except IntegrityError:
                 continue
-        return render(request, 'main/home.html')
+        return render(request, 'main/tables.html', view_data('Course', fields=['professor', 'student']))
     else:
         form = FileForm()
         context['form'] = form
         context['name'] = 'Course'
         return render(request, 'main/upload.html', context)
 
-
-#incomplete
+@mylogin_required
+@permission_required
 def addCourseStudent(request):
     context = dict()
     if request.method == 'POST':
@@ -291,13 +315,15 @@ def addCourseStudent(request):
                         CourseStudent.objects.create(course=course, student=student)
             except IntegrityError:
                 continue
-        return render(request, 'main/home.html')
+        return render(request, 'main/tables.html', view_data('CourseStudent'))
     else:
         form = FileForm()
         context['form'] = form
         context['name'] = 'Course'
         return render(request, 'main/upload.html', context)
 
+@mylogin_required
+@permission_required
 def addCourseProfessor(request):
     context = dict()
     if request.method == 'POST':
@@ -315,7 +341,7 @@ def addCourseProfessor(request):
                         CourseProfessor.objects.create(course=course, professor=prof)
             except IntegrityError:
                 continue
-        return render(request, 'main/home.html')
+        return render(request, 'main/tables.html', view_data('CourseProfessor'))
     else:
         form = FileForm()
         context['form'] = form
