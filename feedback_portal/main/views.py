@@ -498,3 +498,8 @@ def receive_feedback(request):
 
     else:
         return JsonResponse({'message':'wrong request'})
+    
+def extract_lang_properties(data):
+    combined_operations = ['keyword', 'concept', 'doc-sentiment']
+    alchemy_language = watson_developer_cloud.AlchemyLanguageV1(api_key='ddc135d16a20f8e4a6b04bba9e60e8fde322d49f')
+    return alchemy_language.combined(text=data, extract=combined_operations)
