@@ -3,6 +3,7 @@ import re
 import pdb
 import hashlib
 import datetime
+import json
 
 from io import TextIOWrapper
 from random import choice
@@ -34,6 +35,7 @@ from django.template.response import TemplateResponse
 from django.core.mail import send_mail
 from django.utils import timezone
 from django.http import Http404
+
 
 from .forms import *
 from .models import *
@@ -87,9 +89,9 @@ def req_feed(request):
     if request.method == 'POST':
         form = RequestFeedback()
         form.request_by = request.user
-
         try:
-            form.course = Course.objects.filter(name = request.POST['course'])[0]
+            print(request.POST['course'])
+            form.course = Course.objects.filter(id = int(request.POST['course']))[0]
         except ValueError:
             context["inv_course"] = True
             return render(request, template_name, context)
@@ -108,7 +110,16 @@ def displayReq(request):
 
 @mylogin_required
 def home(request):
-    return render(request, 'main/home.html', {})
+    result = RequestFeedback.objects.all()
+    data = []
+    for obj in result:
+        course_data = []
+        course_data.append(obj.course.name)
+        course_data.append(obj.request_by.username)
+        course_data.append(obj.start_date)
+        course_data.append(obj.end_date)
+        data.append(course_data)
+    return render(request, 'main/home.html', {"data": data})
 
 def view_data(model_name):
     context = dict()
@@ -239,17 +250,30 @@ def addAdmin(request):
         return render(request, 'main/upload.html', context)  # Ignore PEP8Bear
 
 @mylogin_required
-def viewFeedback(request, course_id):
+def viewFeedback(request, f_id):
     if request.method == 'GET':
-        # pdb.set_trace()
-        course = Course.objects.filter(pk=course_id)
-        if len(course) == 0:
-            print("not found")
+        fdb_req= RequestFeedback.objects.filter(pk=f_id)
+        if len(fdb_req) == 0:
             raise Http404
         else:
-            course = course[0]
-            return HttpResponse("<h2>"+str(course.name)+"</h2>")
+            fdb_req = fdb_req[0]
+            course = fdb_req.course.name
+            fdb = Feedback.objects.filter(fid = f_id)
+            feedbacks = list()
+            for f in fdb:
+                feedbacks.append( [str(f.id), f.fid.request_by.__str__(), f.created_at.__str__()] )
+            return render(request, 'main/view.html', {"feedbacks" :feedbacks, "course":course })
 
+@mylogin_required
+def showFeedback(request, f_id):
+    if request.method == 'GET':
+        feedbacks = Feedback.objects.filter(pk=f_id)
+        if len(feedbacks) == 0:
+            raise Http404
+        else:
+            feedback = json.loads(feedbacks[0].feedback)
+            answers = [(x, feedback[x]) for x in feedback.keys()]
+            return render(request, 'main/feedback.html', {"feedbacks" : answers, "fid" : f_id })
 
 def serialize_datetime(obj):
     """JSON serializer for objects not serializable by default json code"""
