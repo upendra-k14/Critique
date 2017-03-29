@@ -23,6 +23,12 @@ urlpatterns = [
 
     url(r'^addProfessor/$', views.addProfessor, name='addProfessor'),
 
+    url(r'^addCourse/$', views.addCourse, name='addCourse'),
+
+    url(r'^addCourseProfessor/$', views.addCourseProfessor, name='addCourseProfessor'),
+
+    url(r'^addCourseStudent/$', views.addCourseStudent, name='addCourseStudent'),
+
     url(r'^home/$', views.home, name='home'),
 
     url(r'viewStudents/$', views.displayStu, name='viewStudents'),
