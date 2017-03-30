@@ -1,67 +1,129 @@
-{% include 'main/pre_include.html' %}
-
-{% include 'main/post_include.html' %}
-
-{% load static %}
-
 <!DOCTYPE html>
+{% load static %}
 <html lang="en">
 
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Critique</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="{% static 'main/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+
+    <!-- Custom Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Catamaran:100,200,300,400,500,600,700,800,900" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli" rel="stylesheet">
+
+    <!-- Plugin CSS -->
+    <link rel="stylesheet" href="{% static 'main/vendor/font-awesome/css/font-awesome.min.css' %}">
+    <link rel="stylesheet" href="{% static 'main/css/simple-line-icons.css' %}">
+    <link rel="stylesheet" href="{% static 'main/css/device-mockups.min.css' %}">
+
+    <!-- Theme CSS -->
+    <link href="{% static 'main/css/new-age.min.css' %}" rel="stylesheet">
 
 
-<body style ="background-color:white">
+</head>
 
+<body id="page-top">
 
-<div class="navbar" style ="background-color:#566573;">
-  <div class="navbar-header" >
+    <nav id="mainNav" class="navbar navbar-default navbar-fixed-top">
+        <div class="container">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span> Menu <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand page-scroll" href="#page-top">Critique</a>
+            </div>
 
-      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse" >
-          <span class="sr-only">Toggle navigation</span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-      </button>
-
-      <a class="navbar-brand" href="index.html" style="color:white;font-size:30px">Critique</a>
-
-  </div>
-</div>
-
-<div class="intro-body" style="margin-top:5%;margin-right:100px;margin-left:100px;">
-  <div class="container">
-      <div class="row">
-          <div class="col-md-8 col-md-offset-2">
-              <center><h1 class="brand-heading" style="font-size:55px;">CRITIQUE</h1></center>
-              <p class="intro-text"style="text-align:center;font-size:20px;">Are you tired of filling in the feedback form at the end of every semester ?
-              <br>Here comes our app "The Critique" to your rescue.<br>
-              Fill in the feedback form at your own free time and usig our android application.
-              <br>
-
-               visit the link below to get the app. :)
-             </p>
-
-          </div>
-          <div class="col-md-8 col-md-offset-2">
-            <a class="page-scroll" href="login/"><button type="button" class="btn btn-success"style="margin-left:41%;" >GET STARTED
-            </button></a>
-          </div>
-      </div>
-    </div>
-    </div>
-         <div class="row"style="position:fixed;bottom:10;width:100%;">
-           <div class="col-lg-8 col-lg-offset-2">
-             <center >
-               <p style="font-size:20px">You can  download the android app here.</p>
-               <a href="" class="btn btn-default btn-lg"><button type="button" class="btn btn-success" >DOWNLOAD
-               </button></a>
-             </center>
-           </div>
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a class="page-scroll" href="#download">Download App</a>
+                    </li>
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
         </div>
+        <!-- /.container-fluid -->
+    </nav>
+
+    <header>
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-7">
+                    <div class="header-content">
+                        <div class="header-content-inner">
+                            <h1>Critique</h1>
+                            <h4>Are you a student bored of filling those old feedback forms at the end of every semester?<br> Or are you tired of sitting and reading through hundreds of pages to understand how your course is going?
+                            <br>If the answer to any of the above is yes, then Critique is for you. A web based mobile and cloud application that let's you effectively collect feedback and comprehend it with ease.
+                             We not only allow you to visualise the feedback, we also use the latest in NLP to give you an overview of the descriptions students write.</h4>
+                            <a href="/login" class="btn btn-outline btn-xl page-scroll">Start Now </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-5">
+                    <div class="device-container">
+                        <div class="device-mockup iphone6_plus portrait white">
+                            <div class="device">
+                                <div class="screen">
+                                    <!-- Demo image for screen mockup, you can put an image here, some HTML, an animation, video, or anything else! -->
+                                    <img src="{% static 'main/img/demo-creen-1.png' %}" class="img-responsive" alt="">
+                                </div>
+                                <div class="button">
+                                    <!-- You can hook the "home button" to some JavaScript events or just remove it -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section id="download" class="download bg-primary text-center">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-8 col-md-offset-2">
+                    <h2 class="section-heading">Discover what all the buzz is about!</h2>
+                    <p>Our app is available on mobile devices! Download now to get started!</p>
+                    <div class="badges">
+                        <a class="badge-link" href="{% static 'main/app/critique.apk' %}"><img src="{% static 'main/img/google-play-badge.svg' %}" alt=""></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
 
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2016 IIITS. All Rights Reserved.</p>
+
+        </div>
+    </footer>
+
+    <!-- jQuery -->
+    <script src="{% static 'main/vendor/jquery/jquery.min.js' %}"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="{% static 'main/vendor/bootstrap/js/bootstrap.min.js' %}"></script>
+
+    <!-- Plugin JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js"></script>
+
+    <!-- Theme JavaScript -->
+    <script src="{% static 'main/js/new-age.min.js' %}"></script>
 
 </body>
-
-{% block post_script %}{% endblock %}
 
 </html>
