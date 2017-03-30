@@ -44,6 +44,20 @@ from background_task import background
 from .forms import *
 from .models import *
 
+key_hash = ["How would you rate the course on the whole ?",
+            "Level of effort you put into the course:",
+            "You level of knowledge at the start of the course:",
+            "You level of knowledge at the end of the course:",
+            "Would you recommend this course to your friends ? ",
+            "Were the course contents interesting and challenging ?",
+            "Would you like to learn more about the concepts presented in the course ?",
+            "The instructor’s knowledgeability on the subject.",
+            "The instructor demonstrated enthusiasm in teaching the topics.",
+            "Did the instructor respond to the questions properly ?",
+            "The tutorial time used efficiently. ",
+            "TA’s are effective in helping you learn.",
+            "The number of lab exercises were sufficient."]
+
 # ----------------------------------------------------------------------------------------
 # mylogin_required : It is an authentication function used to check whether a user is logged in or not
 # Uses the request object to check the user attribute. If the attribute is null (no user logged in) then redirects to log in page
@@ -202,8 +216,8 @@ def view_data(model_name, **kwargs):
                     ))
                 else:
                     row_data.append("""<a href="{}">{}</a>""".format(
-                        "#",
-                        "<i class='fa fa-clock-o fw'></i> <span>&nbsp</span> <span style='color:red'>Pending</span>"
+                        reverse('visualiseFeedback', args=[each.id]),
+                        "<i class='fa fa-eye fw'></i> <span>&nbsp</span> <span>Analyse Result</span>"
                     ))
                 required_data.append(row_data)
             context['data'] = required_data
@@ -456,15 +470,68 @@ def showFeedback(request, f_id):
 
 def visualiseFeedback(request, f_id):
     if request.method == "GET":
+        context = dict()
         req_object_list = RequestFeedback.objects.filter(id=f_id)
-        if len(req_object)==0:
+        if len(req_object_list)==0:
             raise Http404
         else:
-            requested_fobject = req_object_list[0]
-            feedbacks = Feedback.objects.filter(fid=requested_fobject)
-            responses = [json.loads(feedback.feedback) for feedback in feedbacks]
-            data = {}
-            return render(request, 'main/visualize.html', context=data)
+            chart_data = getChartData(f_id)
+            if chart_data == -1:
+                context["no_data"] = 1
+                pass
+            else:
+                context = {**context , **chart_data}
+            return render(request, 'main/visualise.html', context)
+
+def getChartData(f_id):
+    feedbacks = Feedback.objects.filter(fid=f_id)
+    if len(feedbacks) == 0:
+        return -1
+    else:
+        responses = [json.loads(feedback.feedback) for feedback in feedbacks]
+        pie_chart = [{"label": "Bad", "value": 0},
+        {"label": "Average", "value": 0},
+        {"label": "Good", "value": 0},
+        {"label": "Great", "value": 0}]
+        area_chart = [{"period": '1',"effort": 0, "know":0},
+        {"period": '2',"effort": 0, "know":0},
+        {"period": '3',"effort": 0, "know":0},
+        {"period": '4',"effort": 0, "know":0}]
+        bar_chart_course = [{"y":"Recommend", "yes":0, "no":0},
+        {"y":"Interesting", "yes":0, "no":0},
+        {"y":"Curious", "yes":0, "no":0}]
+        area_chart_instruct = [{"period": '1',"enthusiasm": 0, "know":0},
+        {"period": '2',"enthusiasm": 0, "know":0},
+        {"period": '3',"enthusiasm": 0, "know":0},
+        {"period": '4',"enthusiasm": 0, "know":0}]
+        pie_chart_instruct = [{"label": "Responded properly", "value": 0},
+        {"label": "Did not respond properly", "value": 0},]
+        area_chart_ta = [{"period": '1',"time": 0, "effective":0, "sufficient": 0},
+        {"period": '2',"time": 0, "effective":0, "sufficient": 0},
+        {"period": '3',"time": 0, "effective":0, "sufficient": 0},
+        {"period": '4',"time": 0, "effective":0, "sufficient": 0}]
+        for response in responses:
+            pie_chart[int(response[key_hash[0]])-1]["value"] += 1
+            area_chart[int(response[key_hash[1]])-1]["effort"] +=1
+            area_chart[int(response[key_hash[2]]) - int(response[key_hash[3]])]["know"] +=1
+            bar_chart_course[0][response[key_hash[4]]] += 1
+            bar_chart_course[1][response[key_hash[5]]] += 1
+            bar_chart_course[2][response[key_hash[6]]] += 1
+            area_chart_instruct[int(response[key_hash[7]])-1]["know"] +=1
+            area_chart_instruct[int(response[key_hash[8]])-1]["enthusiasm"] +=1
+            if response[key_hash[9]]=="yes":
+                pie_chart_instruct[0]["value"] += 1
+            else:
+                pie_chart_instruct[1]["value"] += 1
+            area_chart_ta[int(response[key_hash[10]])-1]["time"] +=1
+            area_chart_ta[int(response[key_hash[11]])-1]["effective"] +=1
+            area_chart_ta[int(response[key_hash[12]])-1]["sufficient"] +=1
+        return {"pie_chart":json.dumps(pie_chart),
+                "area_chart":json.dumps(area_chart),
+                "bar_chart_course":json.dumps(bar_chart_course),
+                "area_chart_instruct":json.dumps(area_chart_instruct),
+                "pie_chart_instruct":json.dumps(pie_chart_instruct),
+                "area_chart_ta":json.dumps(area_chart_ta)}
 
 def serialize_datetime(obj):
     """JSON serializer for objects not serializable by default json code"""

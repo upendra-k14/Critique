@@ -1,0 +1,161 @@
+{% extends "main/basic.html" %}
+
+{% block init_script %}
+  {% include 'main/pre_include.html' %}
+{% endblock %}
+
+{% block navbar %}
+  {% include 'main/navbar.html' %}
+{% endblock %}
+
+{% block sidebar %}
+  {% include 'main/sidebar.html' %}
+{% endblock %}
+
+{% block content %}
+    {% if no_data %}
+    <div class="row">
+        <div class="col-lg-12">
+            <h1><span class="label label-danger">No feedback yet.</span></h1>
+        </div>
+        <!-- /.col-lg-12 -->
+    </div>
+    {% else %}
+    <!-- /.row -->
+    <div class="row">
+        <div class="col-lg-12">
+            <h1 class="page-header">Analysis</h1>
+        </div>
+        <!-- /.col-lg-12 -->
+    </div>
+    <!-- /.row -->
+    <div class="row">
+        <div class="col-lg-8">
+
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <i class="fa fa-bar-chart-o fa-fw"></i> Student self review
+                </div>
+                <div class="panel-body">
+                    <div id="area-chart"></div>
+                </div>
+            </div>
+            <!-- /.panel -->
+
+
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <i class="fa fa-bar-chart-o fa-fw"></i> Instructor review
+                </div>
+                <div class="panel-body">
+                    <div id="area-chart-instruct"></div>
+                </div>
+            </div>
+
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <i class="fa fa-bar-chart-o fa-fw"></i> TA and tutorial review
+                </div>
+                <div class="panel-body">
+                    <div id="area-chart-ta"></div>
+                </div>
+            </div>
+
+            <!-- /.panel -->
+        </div>
+        <!-- /.col-lg-8 -->
+        <div class="col-lg-4">
+
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <i class="fa fa-bar-chart-o fa-fw"></i> Course Satisfaction
+                </div>
+                <div class="panel-body">
+                    <div id="pie-chart"></div>
+                </div>
+            </div>
+
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <i class="fa fa-bar-chart-o fa-fw"></i> Instructor response
+                </div>
+                <div class="panel-body">
+                    <div id="pie-chart-instruct"></div>
+                </div>
+            </div>
+
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <i class="fa fa-bar-chart-o fa-fw"></i> Overall course review
+                </div>
+                <div class="panel-body">
+                    <div id="bar-chart-ta"></div>
+                </div>
+            </div>
+
+            <!-- /.panel .chat-panel -->
+        </div>
+        <!-- /.col-lg-4 -->
+    </div>
+    {% endif %}
+    <!-- /.row -->
+
+{% endblock %}
+
+{% block post_script %}
+  {% include 'main/post_include.html' %}
+  <script>
+  $(function() {
+
+      Morris.Area({
+          element: 'area-chart',
+          data: {{area_chart | safe}},
+          xkey: 'period',
+          ykeys: ['effort', "know"],
+          labels: ['Effort by student', "Knowledge gained"],
+          pointSize: 2,
+          hideHover: 'auto',
+          resize: true
+      });
+      Morris.Bar({
+          element: 'bar-chart-ta',
+          data: {{bar_chart_course | safe}} ,
+          xkey: 'y',
+          ykeys: ['yes', 'no'],
+          labels: ['Yes', 'No'],
+          hideHover: 'auto',
+          resize: true
+      });
+      Morris.Donut({
+          element: 'pie-chart',
+          data: {{ pie_chart | safe}},
+          resize: true
+      });
+      Morris.Donut({
+          element: 'pie-chart-instruct',
+          data: {{ pie_chart_instruct | safe}},
+          resize: true
+      });
+      Morris.Area({
+          element: 'area-chart-ta',
+          data: {{area_chart_ta | safe}},
+          xkey: 'period',
+          ykeys: ['time', "effective", "sufficient"],
+          labels: ['Efficient use of time', "Effective", "Sufficient exercises"],
+          pointSize: 2,
+          hideHover: 'auto',
+          resize: true
+      });
+      Morris.Area({
+          element: 'area-chart-instruct',
+          data: {{area_chart_instruct | safe}},
+          xkey: 'period',
+          ykeys: ['know', "enthusiasm"],
+          labels: ['Knowledge', "Enthusiasm"],
+          pointSize: 2,
+          hideHover: 'auto',
+          resize: true
+      });
+  });
+  </script>
+{% endblock %}
