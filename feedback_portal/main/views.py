@@ -479,7 +479,7 @@ def visualiseFeedback(request, f_id):
             word_list = get_wordle(f_id)
             len_word_list = len(word_list)
             context["length_word_list"] = len_word_list
-            context["word_list"] = word_list
+            context["word_list"] = json.dumps(word_list)
             if chart_data == -1:
                 context["no_data"] = 1
                 pass
@@ -491,21 +491,21 @@ def get_wordle(f_id):
     feedbacks = Feedback.objects.filter(fid=f_id)
     word_list = {}
     key_text = "Anything else you care to share or get off your chest?"
-    analyzed_text = [json.loads(feedback.analyzed_text)[key_text]['keywords'] for feedback in feedbacks]
+    analyzed_text = [feedback.analyzed_text['keywords'] for feedback in feedbacks]
 
     for chunks in analyzed_text:
         for x in chunks:
             word = x['text']
             if word in word_list:
-                word_list[word]['size'] += x['relevance']
+                word_list[word]['size'] += float(x['relevance'])
             else:
-                word_list[word] = {'text': x['text'], 'size': x['relevance']}
+                word_list[word] = {'text': x['text'], 'size': float(x['relevance'])}
     counter = 0
     minsize = 0
     maxsize = 0
 
     for word in word_list:
-        size = word_list[word]
+        size = word_list[word]["size"]
         if counter<=0:
             minsize = size
             maxsize = size
@@ -514,7 +514,7 @@ def get_wordle(f_id):
             maxsize = max(maxsize, size)
 
     for word in word_list:
-        temp = (word_list[word]['size']-minsize)/(maxsize-minsize)
+        temp = (word_list[word]['size']-minsize)/(maxsize-minsize+1)
         if temp<=0.9:
             temp = temp + 0.1
         temp = int(100.0*temp)
