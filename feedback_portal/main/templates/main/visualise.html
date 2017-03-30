@@ -98,12 +98,62 @@
         <!-- /.col-lg-4 -->
     </div>
     {% endif %}
+
+    <br>
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <i class="fa fa-bar-chart-o fa-fw"></i> Overall Important Topics of Major Concern
+    </div>
+    <!-- /.panel-heading -->
+    <div class="panel-body">
+
+        {% if length_word_list > 5 %}
+            <span class="wordle" id="wordle1" style="width: auto; display: block;"></span>
+        {% else %}
+            <span class="wordle"> Sorry. Enough text data is not available </span>
+        {% endif %}
+    </div>
+</div>
     <!-- /.row -->
 
 {% endblock %}
 
 {% block post_script %}
   {% include 'main/post_include.html' %}
+  <script>
+     var frequency_list = {{word_list|safe}};
+     //console.log(frequency_list);
+     var color = d3.scale.linear()
+             .domain([0,10,20,30,40,50,60,70,80,90,100])
+             .range(["#ddd", "#ccc", "#bbb", "#aaa", "#999", "#888", "#777", "#666", "#555", "#444", "#333", "#222"]);
+     d3.layout.cloud().size([800, 300])
+             .words(frequency_list)
+             .rotate(0)
+             .fontSize(function(d) { return d.size; })
+             .on("end", draw)
+             .start();
+     function draw(words) {
+         console.log(d3.select("span.wordle"))
+         d3.select("span.wordle").append("svg")
+                 .attr("width", 850)
+                 .attr("height", 350)
+                 .attr("class", "wordcloud")
+                 .append("g")
+                 // without the transform, words words would get cutoff to the left and top, they would
+                 // appear outside of the SVG area
+                 .attr("transform", "translate(320,200)")
+                 .selectAll("text")
+                 .data(words)
+                 .enter().append("text")
+                 .style("font-size", function(d) { return d.size + "px"; })
+                 .style("fill", function(d, i) { return color(i); })
+                 .attr("transform", function(d) {
+                     return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+                 })
+                 .text(function(d) { return d.text; });
+     }
+ </script>
   <script>
   $(function() {
 
